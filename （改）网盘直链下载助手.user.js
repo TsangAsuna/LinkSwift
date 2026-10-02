@@ -5039,6 +5039,7 @@ button.downloadSubtitle:disabled {
 					switch (subType) {
 						case "link": line = link; break;
 						case "name": line = name; break;
+						case "link.mirrors": line = get.mirror ? get.mirror(link) : ""; break;
 						case "cmd.curl": line = download.tools.convertTo.curl(link, name, headers); break;
 						case "cmd.aria2": line = download.tools.convertTo.aira2(link, name, headers); break;
 						case "cmd.bitcomet": line = download.tools.convertTo.bitcomet(link, name, headers); break;
@@ -7652,7 +7653,7 @@ button.downloadSubtitle:disabled {
 					name: v => v.name,
 					size: v => v.size,
 					link: v => v.downloadUrl,
-					morror: v => base.getMirrorList(v, config.$xunlei.api.mirror),
+					mirror: v => base.getMirrorList(v, config.$xunlei.api.mirror),
 				},
 				headers: {},
 				convert: {},
