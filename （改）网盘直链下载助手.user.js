@@ -3618,6 +3618,8 @@
 					willOpen: async () => {
 						Swal.showLoading();
 						await temp.main.getLink().catch(e => {
+							// 关闭加载弹窗：弹窗本身禁止点击外部与 Esc 关闭，出错时不关闭会永久锁住页面滚动
+							Swal.close();
 							// 错误信息和堆栈
 							let msg = (e instanceof Error) ? e.message : String(e || "未知错误");
 							let displayMsg = msg;
