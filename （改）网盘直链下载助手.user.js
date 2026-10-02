@@ -5182,7 +5182,7 @@ button.downloadSubtitle:disabled {
 			} else if (temp.mode === "bitcomet") {
 				const rpc = base.getValue("setting_bitcomet_rpc").find(i => i.default);
 
-				content.find(`.${mount}.extra`).append(`<button class="${mount} btn warning mini tip" data-title="${rpc.domain + ":" + rpc.port + rpc.path}" data-back-to-downloads="true"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-gear"/></svg>修改服务参数</button>`);
+				content.find(`.${mount}.extra`).append(`<button action="settings" type="bitcomet" class="${mount} btn warning mini tip" data-title="${rpc.domain + ":" + rpc.port + rpc.path}" data-back-to-downloads="true"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-gear"/></svg>修改服务参数</button>`);
 
 				if (files.length >= 2) content.find(`.${mount}.extra`).append(`<button action="copy" type="all.file.cmd.bitcomet" class="${mount} btn default mini tip" data-title="${config.base.dom.copy.all.bitcomet}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制全部 BC 地址</button>`);
 				if (files.length >= 2) content.find(`.${mount}.extra`).append(`<button action="all" type="sendto.bitcomet" class="${mount} btn info mini tip" data-title="${config.base.dom.method.bitcomet.sendto}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg>全部推送至下载器</button>`);
