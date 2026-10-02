@@ -381,6 +381,7 @@
 					"vod0780-aliyun04-vip-lixian.xunlei.com", "vod0781-aliyun04-vip-lixian.xunlei.com", "vod3379-aliyun04-vip-lixian.xunlei.com", "vod3429-aliyun04-vip-lixian.xunlei.com", "vod3459-aliyun04-vip-lixian.xunlei.com", "vod3533-aliyun04-vip-lixian.xunlei.com", "vod4252-aliyun04-vip-lixian.xunlei.com", "vod4253-aliyun04-vip-lixian.xunlei.com", "vod4320-aliyun04-vip-lixian.xunlei.com", "vod4321-aliyun04-vip-lixian.xunlei.com", "vod0555-aliyun06-vip-lixian.xunlei.com", "vod0556-aliyun06-vip-lixian.xunlei.com", "vod1284-aliyun06-vip-lixian.xunlei.com", "vod1285-aliyun06-vip-lixian.xunlei.com", "vod1363-aliyun06-vip-lixian.xunlei.com", "vod1372-aliyun06-vip-lixian.xunlei.com", "vod1629-aliyun06-vip-lixian.xunlei.com", "vod1630-aliyun06-vip-lixian.xunlei.com", "vod1703-aliyun06-vip-lixian.xunlei.com", "vod1704-aliyun06-vip-lixian.xunlei.com", "vod1844-aliyun06-vip-lixian.xunlei.com", "vod0254-aliyun08-vip-lixian.xunlei.com", "vod0255-aliyun08-vip-lixian.xunlei.com", "vod0256-aliyun08-vip-lixian.xunlei.com", "vod0257-aliyun08-vip-lixian.xunlei.com", "vod0261-aliyun08-vip-lixian.xunlei.com", "vod0262-aliyun08-vip-lixian.xunlei.com", "vod0263-aliyun08-vip-lixian.xunlei.com", "vod0264-aliyun08-vip-lixian.xunlei.com", "vod0759-aliyun08-vip-lixian.xunlei.com", "vod0760-aliyun08-vip-lixian.xunlei.com", "vod9410-aliyun08-vip-lixian.xunlei.com", "vod9411-aliyun08-vip-lixian.xunlei.com", "vod9412-aliyun08-vip-lixian.xunlei.com", "vod0080-b02-vip-lixian.xunlei.com", "vod0432-b02-vip-lixian.xunlei.com", "vod0531-b02-vip-lixian.xunlei.com", "vod0532-b02-vip-lixian.xunlei.com", "vod0533-b02-vip-lixian.xunlei.com", "vod0534-b02-vip-lixian.xunlei.com", "vod0537-b02-vip-lixian.xunlei.com", "vod0563-b02-vip-lixian.xunlei.com", "vod0565-b02-vip-lixian.xunlei.com", "vod0566-b02-vip-lixian.xunlei.com", "vod0568-b02-vip-lixian.xunlei.com", "vod0571-b02-vip-lixian.xunlei.com", "vod0572-b02-vip-lixian.xunlei.com", "vod0573-b02-vip-lixian.xunlei.com", "vod0595-b02-vip-lixian.xunlei.com", "vod0596-b02-vip-lixian.xunlei.com", "vod0597-b02-vip-lixian.xunlei.com", "vod0598-b02-vip-lixian.xunlei.com", "vod0636-b02-vip-lixian.xunlei.com", "vod0637-b02-vip-lixian.xunlei.com", "vod0638-b02-vip-lixian.xunlei.com", "vod0639-b02-vip-lixian.xunlei.com", "vod0640-b02-vip-lixian.xunlei.com", "vod0641-b02-vip-lixian.xunlei.com", "vod0642-b02-vip-lixian.xunlei.com", "vod0643-b02-vip-lixian.xunlei.com", "vod0644-b02-vip-lixian.xunlei.com", "vod0645-b02-vip-lixian.xunlei.com", "vod0646-b02-vip-lixian.xunlei.com", "vod0647-b02-vip-lixian.xunlei.com", "vod0648-b02-vip-lixian.xunlei.com", "vod0649-b02-vip-lixian.xunlei.com", "vod0650-b02-vip-lixian.xunlei.com", "vod0651-b02-vip-lixian.xunlei.com", "vod0652-b02-vip-lixian.xunlei.com", "vod0653-b02-vip-lixian.xunlei.com", "vod0654-b02-vip-lixian.xunlei.com", "vod0725-b02-vip-lixian.xunlei.com", "vod0726-b02-vip-lixian.xunlei.com", "vod0727-b02-vip-lixian.xunlei.com", "vod0006-b05-vip-lixian.xunlei.com", "vod0009-b05-vip-lixian.xunlei.com", "vod0010-b05-vip-lixian.xunlei.com", "vod0011-b05-vip-lixian.xunlei.com", "vod0012-b05-vip-lixian.xunlei.com", "vod0013-b05-vip-lixian.xunlei.com", "vod0014-b05-vip-lixian.xunlei.com", "vod0043-b05-vip-lixian.xunlei.com", "vod0044-b05-vip-lixian.xunlei.com", "vod0045-b05-vip-lixian.xunlei.com", "vod0051-b05-vip-lixian.xunlei.com", "vod0053-b05-vip-lixian.xunlei.com", "vod0054-b05-vip-lixian.xunlei.com", "vod0055-b05-vip-lixian.xunlei.com", "vod0139-b05-vip-lixian.xunlei.com", "vod0140-b05-vip-lixian.xunlei.com", "vod0141-b05-vip-lixian.xunlei.com", "vod0142-b05-vip-lixian.xunlei.com", "vod0143-b05-vip-lixian.xunlei.com", "vod0349-b05-vip-lixian.xunlei.com", "vod0001-c01-vip-lixian.xunlei.com", "vod0002-c01-vip-lixian.xunlei.com", "vod0003-c01-vip-lixian.xunlei.com", "vod0004-c01-vip-lixian.xunlei.com", "vod0005-c01-vip-lixian.xunlei.com", "vod0070-h01-vip-lixian.xunlei.com", "vod0071-h01-vip-lixian.xunlei.com", "vod0074-h01-vip-lixian.xunlei.com", "vod0075-h01-vip-lixian.xunlei.com", "vod0131-h01-vip-lixian.xunlei.com", "vod0132-h01-vip-lixian.xunlei.com", "vod0153-h01-vip-lixian.xunlei.com", "vod0088-h04-vip-lixian.xunlei.com", "vod0089-h04-vip-lixian.xunlei.com", "vod0090-h04-vip-lixian.xunlei.com", "vod0091-h04-vip-lixian.xunlei.com", "vod0092-h04-vip-lixian.xunlei.com", "vod0093-h04-vip-lixian.xunlei.com", "vod0094-h04-vip-lixian.xunlei.com", "vod0097-h04-vip-lixian.xunlei.com", "vod0098-h04-vip-lixian.xunlei.com", "vod0099-h04-vip-lixian.xunlei.com", "vod0100-h04-vip-lixian.xunlei.com", "vod0101-h04-vip-lixian.xunlei.com", "vod0105-h04-vip-lixian.xunlei.com", "vod0128-h04-vip-lixian.xunlei.com", "vod0129-h04-vip-lixian.xunlei.com", "vod0143-h04-vip-lixian.xunlei.com", "vod0317-h04-vip-lixian.xunlei.com", "vod0318-h04-vip-lixian.xunlei.com", "vod0319-h04-vip-lixian.xunlei.com", "vod0320-h04-vip-lixian.xunlei.com", "vod0003-h05-vip-lixian.xunlei.com", "vod0004-h05-vip-lixian.xunlei.com", "vod0007-h05-vip-lixian.xunlei.com", "vod0008-h05-vip-lixian.xunlei.com", "vod0009-h05-vip-lixian.xunlei.com", "vod0010-h05-vip-lixian.xunlei.com", "vod0012-h05-vip-lixian.xunlei.com", "vod0013-h05-vip-lixian.xunlei.com", "vod0014-h05-vip-lixian.xunlei.com", "vod0017-h05-vip-lixian.xunlei.com", "vod0097-h05-vip-lixian.xunlei.com", "vod0098-h05-vip-lixian.xunlei.com", "vod0099-h05-vip-lixian.xunlei.com", "vod0116-h05-vip-lixian.xunlei.com", "vod0117-h05-vip-lixian.xunlei.com", "vod0121-h05-vip-lixian.xunlei.com", "vod0122-h05-vip-lixian.xunlei.com", "vod0131-h05-vip-lixian.xunlei.com", "vod0145-h05-vip-lixian.xunlei.com", "vod0146-h05-vip-lixian.xunlei.com", "vod0184-h05-vip-lixian.xunlei.com", "vod0185-h05-vip-lixian.xunlei.com", "vod0221-h05-vip-lixian.xunlei.com", "vod0222-h05-vip-lixian.xunlei.com", "vod0223-h05-vip-lixian.xunlei.com", "vod0224-h05-vip-lixian.xunlei.com", "vod0225-h05-vip-lixian.xunlei.com", "vod0227-h05-vip-lixian.xunlei.com", "vod0252-h05-vip-lixian.xunlei.com", "vod0253-h05-vip-lixian.xunlei.com", "vod0254-h05-vip-lixian.xunlei.com", "vod0001-m01-vip-lixian.xunlei.com", "vod0002-m01-vip-lixian.xunlei.com", "vod0003-m01-vip-lixian.xunlei.com", "vod0006-m01-vip-lixian.xunlei.com", "vod0007-m01-vip-lixian.xunlei.com", "vod0008-m01-vip-lixian.xunlei.com", "vod0010-m01-vip-lixian.xunlei.com", "vod0011-m01-vip-lixian.xunlei.com", "vod0012-m01-vip-lixian.xunlei.com", "vod0013-m01-vip-lixian.xunlei.com", "vod0014-m01-vip-lixian.xunlei.com", "vod0019-m01-vip-lixian.xunlei.com", "vod0020-m01-vip-lixian.xunlei.com", "vod0021-m01-vip-lixian.xunlei.com", "vod0022-m01-vip-lixian.xunlei.com", "vod0064-txyun08-vip-lixian.xunlei.com", "vod0065-txyun08-vip-lixian.xunlei.com", "vod0066-txyun08-vip-lixian.xunlei.com", "vod0067-txyun08-vip-lixian.xunlei.com", "vod0068-txyun08-vip-lixian.xunlei.com", "vod0069-txyun08-vip-lixian.xunlei.com", "vod0070-txyun08-vip-lixian.xunlei.com", "vod0340-txyun08-vip-lixian.xunlei.com", "vod0341-txyun08-vip-lixian.xunlei.com", "vod0032-z01-vip-lixian.xunlei.com", "vod0035-z01-vip-lixian.xunlei.com", "vod0036-z01-vip-lixian.xunlei.com", "vod0037-z01-vip-lixian.xunlei.com", "vod0038-z01-vip-lixian.xunlei.com", "vod0039-z01-vip-lixian.xunlei.com", "vod0040-z01-vip-lixian.xunlei.com", "vod0041-z01-vip-lixian.xunlei.com", "vod0042-z01-vip-lixian.xunlei.com", "vod0091-z01-vip-lixian.xunlei.com", "vod0093-z01-vip-lixian.xunlei.com", "vod0131-z01-vip-lixian.xunlei.com", "vod0135-z01-vip-lixian.xunlei.com", "vod0136-z01-vip-lixian.xunlei.com", "vod0146-z01-vip-lixian.xunlei.com", "vod0155-z01-vip-lixian.xunlei.com", "vod0156-z01-vip-lixian.xunlei.com", "vod0167-z01-vip-lixian.xunlei.com", "vod0195-z01-vip-lixian.xunlei.com", "vod0196-z01-vip-lixian.xunlei.com", "vod0281-z01-vip-lixian.xunlei.com"
 				],
 				getLink: "https://api-pan.xunlei.com/drive/v1/files/",
+				listFiles: "https://api-pan.xunlei.com/drive/v1/files",
 				getCaptchaToken: "https://xluser-ssl.xunlei.com/v1/shield/captcha/init",
 			},
 			mount: {
@@ -2497,7 +2498,7 @@
 				</label>
 				<label class="${mount} setting-item">
 					<div>存储路径</div>
-					<input type="text" autocomplete="off" placeholder="文件下载后保存路径，例如 D:\\Downloads\\，留空则默认" class="${mount} input swal2-input listener-rpc-input" data-type="bitcomet.dir" value="">
+					<input type="text" autocomplete="off" placeholder="文件下载后保存路径，例如 D:\\Downloads\\，留空则默认；推送云盘文件夹时会在其下创建对应目录" class="${mount} input swal2-input listener-rpc-input" data-type="bitcomet.dir" value="">
 				</label>`;
 			Swal.fire({
 				...temp.swalDefault,
@@ -4949,7 +4950,19 @@ button.downloadSubtitle:disabled {
 					switch (type) {
 						case "idm": res = await download.tools.sendTo.idm(link, name, size, headers); break;
 						case "aria2": res = await download.tools.sendTo.aria2(link, name, headers); break;
-						case "bitcomet": res = await download.tools.sendTo.bitcomet(link, name, headers); break;
+						case "bitcomet": {
+							const config = {};
+							if (base.isType(get.path) === "function") {
+								const path = get.path(file);
+								if (path) config.folderPath = path;
+							}
+							if (base.isType(get.mirror) === "function") {
+								const mirrorList = get.mirror(link);
+								if (mirrorList) config.mirror_url_list = mirrorList;
+							}
+							res = await download.tools.sendTo.bitcomet(link, name, headers, Object.keys(config).length ? config : undefined);
+							break;
+						}
 						case "abdm": res = await download.tools.sendTo.abdm(link, name, headers); break;
 						default: break;
 					}
@@ -5075,12 +5088,14 @@ button.downloadSubtitle:disabled {
 			files.forEach((v, i) => {
 				if (get.dir(v)) return;
 				const name = get.name(v);
+				const path = base.isType(get.path) === "function" ? get.path(v) : "";
+				const displayName = path ? `${path}/${name}` : name;
 				const size = get.size(v);
 				const link = get.link(v);
 				const mirrors = base.isType(get.mirror) !== "undefined" ? get.mirror(get.link(v)) : undefined;
 				if (!link || !link.includes("http")) {
 					content.find(`.${mount}.main`).append(`<div class="item">
-						<div class="name ${mount} tip" data-size="${size}"><div class="name">${name}</div><div class="size">${base.sizeFormat(size)}</div></div>
+						<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
 
 						<div class="message">${link ? link : "获取下载地址失败，刷新网页后再试试吧~"}</div>
 					</div>`)
@@ -5114,7 +5129,7 @@ button.downloadSubtitle:disabled {
 						const finalink = download.tools.convertTo.curl(link, name, headers);
 						allLink.push(finalink);
 						content.find(`.${mount}.main`).append(`<div class="item" data-index="${i}">
-							<div class="name ${mount} tip" data-size="${size}"><div class="name">${name}</div><div class="size">${base.sizeFormat(size)}</div></div>
+							<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
 
 							<a action="copy" type="file.cmd.curl" class="link ${mount} tip" data-title="${config.base.dom.copy.curl}">${finalink}<br/><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制 ${name} 下载命令行</a>
 						</div>`);
@@ -5123,7 +5138,7 @@ button.downloadSubtitle:disabled {
 						const finalink = download.tools.convertTo.aira2(link, name, headers);
 						allLink.push(finalink);
 						content.find(`.${mount}.main`).append(`<div class="item" data-index="${i}">
-							<div class="name ${mount} tip" data-size="${size}"><div class="name">${name}</div><div class="size">${base.sizeFormat(size)}</div></div>
+							<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
 
 							<button action="sendto" type="aria2" class="link ${mount} btn default mini"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送地址到 Aria2 下载器</span></button>
 
@@ -5131,10 +5146,10 @@ button.downloadSubtitle:disabled {
 						</div>`);
 					}
 					if (temp.mode === "bitcomet") {
-						const finalink = download.tools.convertTo.bitcomet(link, name, headers);
+						const finalink = download.tools.convertTo.bitcomet(link, name, headers, null, mirrors ? String(mirrors).split("\n") : []);
 						allLink.push(finalink);
 						content.find(`.${mount}.main`).append(`<div class="item" data-index="${i}">
-							<div class="name ${mount} tip" data-size="${size}"><div class="name">${name}</div><div class="size">${base.sizeFormat(size)}</div></div>
+							<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
 
 							<a href="${finalink}" class="link ${mount} btn default mini tip" data-title="${config.base.dom.method.bitcomet.normal}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-downward"/></svg>使用 BC 地址下载</a>
 
@@ -5304,9 +5319,10 @@ button.downloadSubtitle:disabled {
 				 * @param {String} filename - 文件名
 				 * @param {Object} [headers] - 请求头对象（可选）
 				 * @param {Array} [config] - 自定义参数（可选）
+				 * @param {Array<String>} [mirrors] - 镜像地址列表（可选），每个镜像作为一个 mirror 参数写入 BC 链接
 				 * @returns {String} 编码后的 BC 协议 URL
 				 */
-				bitcomet(link, filename, headers, config) {
+				bitcomet(link, filename, headers, config, mirrors = []) {
 					filename = base.fixFilename(filename);
 					headers = base.standHeaders(headers, true, false);
 					const data = new URLSearchParams();
@@ -5319,7 +5335,10 @@ button.downloadSubtitle:disabled {
 						}
 					}
 					if (config && base.isType(config) === "object") for (const [key, value] of Object.entries(config)) data.set(key, value);
-					const extraParams = data.toString();
+					let extraParams = data.toString();
+					for (const item of (base.isType(mirrors) === "array" ? mirrors : [])) {
+						if (item) extraParams += `&mirror=${encodeURIComponent(item)}`;
+					}
 					const bc = `AA/${encodeURIComponent(filename)}/?url=${encodeURIComponent(link)}${extraParams ? ("&" + extraParams) : ""}ZZ`;
 					return `bc://http/${base.encodeBase(bc)}`;
 				},
@@ -5429,7 +5448,7 @@ button.downloadSubtitle:disabled {
 				 * @param {String} link - 下载地址
 				 * @param {String} filename - 文件名
 				 * @param {Array} [headers] - 请求头对象（可选）
-				 * @param {Array} [config] - 自定义参数（可选）
+				 * @param {Object} [config] - 自定义参数（可选）；键 folderPath 为云盘内的相对文件夹路径，会在配置的存储路径下创建对应子目录；其余键值对原样写入请求
 				 * @returns {Promise<"success"|"fail">} 发送态结果
 				 */
 				async bitcomet(link, filename, headers, config) {
@@ -5460,7 +5479,18 @@ button.downloadSubtitle:disabled {
 								default: break;
 							}
 						}
-						if (config && base.isType(config) === "object") for (const [key, value] of Object.entries(config)) data.set(key, value);
+						if (config && base.isType(config) === "object") {
+							let folderPath = "";
+							for (const [key, value] of Object.entries(config)) {
+								if (key === "folderPath") { folderPath = String(value || ""); continue; }
+								data.set(key, value);
+							}
+							// 在配置的存储路径下按云盘内的文件夹结构创建子目录；未配置存储路径时无法确定基准目录，保持默认行为
+							if (folderPath && rpc.dir) {
+								const sub = folderPath.split("/").filter(Boolean).join("\\") + "\\";
+								data.set("save_path", rpc.dir.replace(/[\\/]+$/, "") + "\\" + sub);
+							}
+						}
 						try {
 							const res = await base.post(url, data, {
 								"Authorization": `Basic ${base.encodeBase(rpc.authName + ":" + rpc.authPass)}`,
@@ -7614,11 +7644,59 @@ button.downloadSubtitle:disabled {
 				};
 			}
 		},
+		async listFolderFiles(folderId, prefix = "") {
+			// 递归列出文件夹中的全部文件，folderPath 记录文件在所选文件夹内的相对路径
+			const token = await this.getToken(false, false).catch(e => {
+				if (e instanceof Error) throw e;
+				throw new Error(e?.message || e || "[迅雷云盘] 获取令牌失败");
+			});
+			const headers = {
+				"Authorization": `${token.credentials?.token_type} ${token.credentials?.access_token}`,
+				"Content-Type": "application/json",
+				"X-Captcha-Token": token.captcha.token,
+				"X-Device-Id": token.device_id
+			};
+			const files = [];
+			let pageToken = "";
+			do {
+				const url = `${config.$xunlei.api.listFiles}?parent_id=${folderId}&limit=100${pageToken ? "&page_token=" + encodeURIComponent(pageToken) : ""}`;
+				const res = await base.get(url, headers).catch(e => {
+					throw new Error(e?.message || e || "[迅雷云盘] 列出文件夹内容失败");
+				});
+				for (const item of (res?.files || [])) {
+					if (item.kind === "drive#folder") {
+						files.push(...await this.listFolderFiles(item.id, prefix ? `${prefix}/${item.name}` : item.name));
+					} else if (item.kind === "drive#file") {
+						item.folderPath = prefix;
+						files.push(item);
+					}
+				}
+				pageToken = res?.next_page_token || "";
+			} while (pageToken);
+			return files;
+		},
 		async getLink() {
-			const selects = this.getSelectedList();
+			let selects = this.getSelectedList();
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
-			if (selects.every(item => item.kind !== "drive#file")) throw new Error("提示：<br/>请打开文件夹后再勾选文件~");
 			if (temp.page === "home") {
+				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
+				if (selects.some(item => item.kind === "drive#folder")) {
+					$doc.find(".loading-popup .loading-title").html(`地址获取中`);
+					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					const expanded = [];
+					for (const item of selects) {
+						if (item.kind === "drive#folder") {
+							expanded.push(...await this.listFolderFiles(item.id, item.name).catch(e => {
+								if (e instanceof Error) throw e;
+								throw new Error(e?.message || e || "[迅雷云盘] 解析文件夹失败");
+							}));
+						} else {
+							expanded.push(item);
+						}
+					}
+					if (!expanded.length) throw new Error("提示：<br/>所选文件夹里没有文件哦~");
+					selects = expanded;
+				}
 				const batchSize = 15;
 				let proc = 0;
 				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
@@ -7653,6 +7731,7 @@ button.downloadSubtitle:disabled {
 					name: v => v.name,
 					size: v => v.size,
 					link: v => v.downloadUrl,
+					path: v => v.folderPath || "",
 					mirror: v => base.getMirrorList(v, config.$xunlei.api.mirror),
 				},
 				headers: {},
