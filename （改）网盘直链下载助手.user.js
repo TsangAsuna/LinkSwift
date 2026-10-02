@@ -4984,6 +4984,72 @@ button.downloadSubtitle:disabled {
 				target.removeClass("danger success").removeData("state").html(originalHtml).css("opacity", "");
 			});
 
+			// 展开/收起文件夹分组，文件行在首次展开时一次性插入
+			$doc.on("click", `.${mount}.btn[action="togglefolder"]`, (e) => {
+				e.preventDefault();
+				const target = $(e.currentTarget);
+				const row = target.closest(".item");
+				const groupIndex = Number(row.attr("data-group-index"));
+				const path = temp.folderGroups?.[groupIndex];
+				if (!row.length || path === undefined) return;
+				if (temp.expandedFolders.has(path)) {
+					temp.expandedFolders.delete(path);
+					row.parent().find(`.item[data-group-file="${groupIndex}"]`).remove();
+					target.text("展开");
+				} else {
+					temp.expandedFolders.add(path);
+					row.after(temp.folderHtml?.[groupIndex] || "");
+					target.text("收起");
+				}
+			});
+
+			// 按文件夹批量推送：groupIndex 为 -1 时推送全部文件，逐个推送并显示进度
+			$doc.on("click", `.${mount}.btn[action="sendfolder"]`, async (e) => {
+				e.preventDefault();
+				const target = $(e.currentTarget);
+				if (target.data("state") === "processing") return;
+				const groupIndex = Number(target.attr("data-group-index"));
+				const state = download.state(0);
+				if (!state) return;
+				const { files, get, headers } = state;
+				const indices = files.map((v, i) => i).filter(i => {
+					if (get.dir(files[i])) return false;
+					if (groupIndex === -1) return true;
+					const path = base.isType(get.path) === "function" ? get.path(files[i]) : "";
+					return path === temp.folderGroups?.[groupIndex];
+				});
+				if (!indices.length) return;
+				target.data("state", "processing");
+				const originalHtml = target.html();
+				target.find(".pl-icon").remove();
+				let ok = 0, fail = 0;
+				for (let n = 0; n < indices.length; n++) {
+					const file = files[indices[n]];
+					const link = get.link(file);
+					const name = get.name(file);
+					target.text(`推送中 ${n + 1} / ${indices.length}`);
+					const config = {};
+					if (base.isType(get.path) === "function") {
+						const path = get.path(file);
+						if (path) config.folderPath = path;
+					}
+					if (base.isType(get.mirror) === "function") {
+						const mirrorList = get.mirror(link);
+						if (mirrorList) config.mirror_url_list = mirrorList;
+					}
+					try {
+						const res = await download.tools.sendTo.bitcomet(link, name, headers, Object.keys(config).length ? config : undefined);
+						res === "success" ? ok++ : fail++;
+					} catch {
+						fail++;
+					}
+					await base.sleep(150);
+				}
+				target.html(fail ? `<svg class="pl-icon"><use xlink:href="#pl-icon-fa-x-mark"/></svg><span>${ok} 成功 ${fail} 失败</span>` : `<svg class="pl-icon"><use xlink:href="#pl-icon-fa-check"/></svg><span>${ok} 个已推送</span>`).animate({ opacity: "0.5" }, "slow");
+				await base.sleep(3000);
+				target.removeData("state").css("opacity", "").html(originalHtml);
+			});
+
 			$doc.on("click", `.${mount}.btn[action="aria2"][type]`, (e) => {
 				e.preventDefault();
 				const target = $(e.currentTarget);
@@ -5084,92 +5150,137 @@ button.downloadSubtitle:disabled {
 			const { files, get, headers, dom } = state;
 			if (!files.length) throw new Error("提示：<br/>获取下载地址失败，刷新网页后再试试吧~");
 			if (!keepDowning) base._resetAllData(true);
+			if (!keepDowning || !temp.expandedFolders) temp.expandedFolders = new Set();
 
 			const content = $(`<div><div class="${mount} main"></div><div class="${mount} extra"></div></div>`);
 			let allLink = [];
+			// 带相对路径信息时按文件夹分组渲染：先只渲染文件夹行，文件行在展开时一次性插入，避免一次渲染数百行造成卡顿
+			const hasGroups = base.isType(get.path) === "function" && files.some(v => !get.dir(v) && get.path(v));
+			const groups = new Map();
 			files.forEach((v, i) => {
 				if (get.dir(v)) return;
+				const key = hasGroups ? get.path(v) : "";
+				if (!groups.has(key)) groups.set(key, []);
+				groups.get(key).push(i);
+			});
+			const groupPaths = [...groups.keys()];
+			const groupHtml = [];
+			const buildFileRow = (v, i, groupIndex) => {
 				const name = get.name(v);
 				const path = base.isType(get.path) === "function" ? get.path(v) : "";
 				const displayName = path ? `${path}/${name}` : name;
 				const size = get.size(v);
 				const link = get.link(v);
 				const mirrors = base.isType(get.mirror) !== "undefined" ? get.mirror(get.link(v)) : undefined;
+				const groupAttr = groupIndex === undefined ? "" : ` data-group-file="${groupIndex}"`;
 				if (!link || !link.includes("http")) {
-					content.find(`.${mount}.main`).append(`<div class="item">
+					return `<div class="item"${groupAttr}>
 						<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
 
 						<div class="message">${link ? link : "获取下载地址失败，刷新网页后再试试吧~"}</div>
-					</div>`)
-				} else {
-					if (temp.mode === "api") {
-						allLink.push(link);
-						content.find(`.${mount}.main`).append(`<div class="item" data-index="${i}" data-link="${link}" data-name="${name}" data-size="${size}">
-							<div class="name ${mount} tip"><div class="name">${name}</div><div class="size">${base.sizeFormat(size)}</div></div>
-
-							<button action="download" type="enhance" class="link ${mount} btn default mini tip" data-title="${config.base.dom.method.api.enhance}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-downward"/></svg>增强下载 (Beta)</button>
-
-							<button action="download" type="normal" class="link ${mount} btn info mini tip" data-title="${config.base.dom.method.api.normal}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-downward"/></svg>直接下载</button>
-
-							<button action="sendto" type="idm" class="${mount} btn default mini tip" data-title="${config.base.dom.method.api.idm}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送至 IDM (Beta)</span></button>
-
-							<button action="copy" type="file.name" class="${mount} btn success mini tip" data-title="${config.base.dom.copy.name}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制名称</button>
-
-							<button action="copy" type="file.link" class="${mount} btn warning mini tip" data-title="${config.base.dom.copy.link}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制地址</button>
-
-							<div class="downing" style="display:none">
-								<div class="${mount} progress-bar">
-									<div class="foreground"><span class="text">正在加载...</span></div>
-									<div class="background"><span class="text">正在加载...</span></div>
-								</div>
-								<button action="download" type="stop" class="${mount} btn danger mini"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-x-mark"/></svg>取消下载</button>
-								<button action="download" type="back" class="${mount} btn info mini" style="display:none"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-x-mark"/></svg>返回</button>
-							</div>
-						</div>`);
-					}
-					if (temp.mode === "curl") {
-						const finalink = download.tools.convertTo.curl(link, name, headers);
-						allLink.push(finalink);
-						content.find(`.${mount}.main`).append(`<div class="item" data-index="${i}">
-							<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
-
-							<a action="copy" type="file.cmd.curl" class="link ${mount} tip" data-title="${config.base.dom.copy.curl}">${finalink}<br/><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制 ${name} 下载命令行</a>
-						</div>`);
-					}
-					if (temp.mode === "aria2") {
-						const finalink = download.tools.convertTo.aira2(link, name, headers);
-						allLink.push(finalink);
-						content.find(`.${mount}.main`).append(`<div class="item" data-index="${i}">
-							<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
-
-							<button action="sendto" type="aria2" class="link ${mount} btn default mini"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送地址到 Aria2 下载器</span></button>
-
-							<button action="copy" type="file.cmd.aria2" class="${mount} btn info mini tip" data-title="${config.base.dom.copy.aria2}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制下载命令行</button>
-						</div>`);
-					}
-					if (temp.mode === "bitcomet") {
-						const finalink = download.tools.convertTo.bitcomet(link, name, headers, null, mirrors ? String(mirrors).split("\n") : []);
-						allLink.push(finalink);
-						content.find(`.${mount}.main`).append(`<div class="item" data-index="${i}">
-							<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
-
-							<a href="${finalink}" class="link ${mount} btn default mini tip" data-title="${config.base.dom.method.bitcomet.normal}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-downward"/></svg>使用 BC 地址下载</a>
-
-							${mirrors ? `<button action="copy" type="file.link.mirrors" class="${mount} btn success mini tip" data-title="${config.base.dom.copy.mirrors}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制镜像</button>` : ""}
-
-							<button action="sendto" type="bitcomet" class="${mount} btn info mini tip" data-title="${config.base.dom.method.bitcomet.sendto}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送至下载器</span></button>
-						</div>`);
-					}
-					if (temp.mode === "abdm") {
-						content.find(`.${mount}.main`).append(`<div class="item" data-index="${i}">
-
-							<div class="${mount} name tip" data-size="${size}"><div class="name">${name}</div><div class="size">${base.sizeFormat(size)}</div></div>
-
-							<button action="sendto" type="abdm" class="link ${mount} btn default mini"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送地址到 ABDM 下载器</span></button>
-						</div>`);
-					}
+					</div>`;
 				}
-			});
+				if (temp.mode === "api") {
+					allLink.push(link);
+					return `<div class="item" data-index="${i}" data-link="${link}" data-name="${name}" data-size="${size}"${groupAttr}>
+						<div class="name ${mount} tip"><div class="name">${name}</div><div class="size">${base.sizeFormat(size)}</div></div>
+
+						<button action="download" type="enhance" class="link ${mount} btn default mini tip" data-title="${config.base.dom.method.api.enhance}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-downward"/></svg>增强下载 (Beta)</button>
+
+						<button action="download" type="normal" class="link ${mount} btn info mini tip" data-title="${config.base.dom.method.api.normal}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-downward"/></svg>直接下载</button>
+
+						<button action="sendto" type="idm" class="${mount} btn default mini tip" data-title="${config.base.dom.method.api.idm}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送至 IDM (Beta)</span></button>
+
+						<button action="copy" type="file.name" class="${mount} btn success mini tip" data-title="${config.base.dom.copy.name}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制名称</button>
+
+						<button action="copy" type="file.link" class="${mount} btn warning mini tip" data-title="${config.base.dom.copy.link}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制地址</button>
+
+						<div class="downing" style="display:none">
+							<div class="${mount} progress-bar">
+								<div class="foreground"><span class="text">正在加载...</span></div>
+								<div class="background"><span class="text">正在加载...</span></div>
+							</div>
+							<button action="download" type="stop" class="${mount} btn danger mini"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-x-mark"/></svg>取消下载</button>
+							<button action="download" type="back" class="${mount} btn info mini" style="display:none"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-x-mark"/></svg>返回</button>
+						</div>
+					</div>`;
+				}
+				if (temp.mode === "curl") {
+					const finalink = download.tools.convertTo.curl(link, name, headers);
+					allLink.push(finalink);
+					return `<div class="item" data-index="${i}"${groupAttr}>
+						<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
+
+						<a action="copy" type="file.cmd.curl" class="link ${mount} tip" data-title="${config.base.dom.copy.curl}">${finalink}<br/><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制 ${name} 下载命令行</a>
+					</div>`;
+				}
+				if (temp.mode === "aria2") {
+					const finalink = download.tools.convertTo.aira2(link, name, headers);
+					allLink.push(finalink);
+					return `<div class="item" data-index="${i}"${groupAttr}>
+						<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
+
+						<button action="sendto" type="aria2" class="link ${mount} btn default mini"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送地址到 Aria2 下载器</span></button>
+
+						<button action="copy" type="file.cmd.aria2" class="${mount} btn info mini tip" data-title="${config.base.dom.copy.aria2}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制下载命令行</button>
+					</div>`;
+				}
+				if (temp.mode === "bitcomet") {
+					const finalink = download.tools.convertTo.bitcomet(link, name, headers, null, mirrors ? String(mirrors).split("\n") : []);
+					allLink.push(finalink);
+					return `<div class="item" data-index="${i}"${groupAttr}>
+						<div class="name ${mount} tip" data-size="${size}"><div class="name">${displayName}</div><div class="size">${base.sizeFormat(size)}</div></div>
+
+						<a href="${finalink}" class="link ${mount} btn default mini tip" data-title="${config.base.dom.method.bitcomet.normal}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-downward"/></svg>使用 BC 地址下载</a>
+
+						${mirrors ? `<button action="copy" type="file.link.mirrors" class="${mount} btn success mini tip" data-title="${config.base.dom.copy.mirrors}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制镜像</button>` : ""}
+
+						<button action="sendto" type="bitcomet" class="${mount} btn info mini tip" data-title="${config.base.dom.method.bitcomet.sendto}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送至下载器</span></button>
+					</div>`;
+				}
+				if (temp.mode === "abdm") {
+					return `<div class="item" data-index="${i}"${groupAttr}>
+
+						<div class="${mount} name tip" data-size="${size}"><div class="name">${name}</div><div class="size">${base.sizeFormat(size)}</div></div>
+
+						<button action="sendto" type="abdm" class="link ${mount} btn default mini"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送地址到 ABDM 下载器</span></button>
+					</div>`;
+				}
+				return "";
+			};
+			if (hasGroups) {
+				temp.folderGroups = groupPaths;
+				temp.folderHtml = groupHtml;
+				groupPaths.forEach((path, groupIndex) => {
+					const indices = groups.get(path);
+					groupHtml[groupIndex] = indices.map(i => buildFileRow(files[i], i, groupIndex)).join("");
+					if (path === "") {
+						// 未分组的文件（直接勾选的）按原样渲染
+						content.find(`.${mount}.main`).append(groupHtml[groupIndex]);
+						return;
+					}
+					const items = indices.map(i => files[i]);
+					const totalSize = items.reduce((sum, v) => sum + (Number(get.size(v)) || 0), 0);
+					const expanded = temp.expandedFolders.has(path);
+					const pushButton = temp.mode === "bitcomet" ? `
+
+						<button action="sendfolder" data-group-index="${groupIndex}" class="${mount} btn info mini tip" data-title="${config.base.dom.method.bitcomet.sendto}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送此文件夹</span></button>` : "";
+					content.find(`.${mount}.main`).append(`<div class="item folder-group" data-group-index="${groupIndex}">
+						<div class="name ${mount} tip" data-title="点击展开查看该文件夹内的文件列表"><div class="name">${path}</div><div class="size">${items.length} 个文件 · ${base.sizeFormat(totalSize)}</div></div>
+
+						<button action="togglefolder" class="${mount} btn default mini">${expanded ? "收起" : "展开"}</button>
+						${pushButton}
+					</div>
+					${expanded ? groupHtml[groupIndex] : ""}`);
+				});
+			} else {
+				temp.folderGroups = null;
+				temp.folderHtml = null;
+				files.forEach((v, i) => {
+					if (get.dir(v)) return;
+					content.find(`.${mount}.main`).append(buildFileRow(v, i, undefined));
+				});
+			}
 			allLink = (allLink ? allLink.join("\r\n") : "")
 			if (temp.mode === "api") {
 				const rpc = base.getValue("setting_idm_rpc");
@@ -5202,7 +5313,11 @@ button.downloadSubtitle:disabled {
 				content.find(`.${mount}.extra`).append(`<button action="settings" type="bitcomet" class="${mount} btn warning mini tip" data-title="${rpc.domain + ":" + rpc.port + rpc.path}" data-back-to-downloads="true"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-gear"/></svg>修改服务参数</button>`);
 
 				if (files.length >= 2) content.find(`.${mount}.extra`).append(`<button action="copy" type="all.file.cmd.bitcomet" class="${mount} btn default mini tip" data-title="${config.base.dom.copy.all.bitcomet}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制全部 BC 地址</button>`);
-				if (files.length >= 2) content.find(`.${mount}.extra`).append(`<button action="all" type="sendto.bitcomet" class="${mount} btn info mini tip" data-title="${config.base.dom.method.bitcomet.sendto}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg>全部推送至下载器</button>`);
+				if (hasGroups) {
+					content.find(`.${mount}.extra`).append(`<button action="sendfolder" data-group-index="-1" class="${mount} btn info mini tip" data-title="${config.base.dom.method.bitcomet.sendto}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送全部至下载器</span></button>`);
+				} else if (files.length >= 2) {
+					content.find(`.${mount}.extra`).append(`<button action="all" type="sendto.bitcomet" class="${mount} btn info mini tip" data-title="${config.base.dom.method.bitcomet.sendto}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg>全部推送至下载器</button>`);
+				}
 			} else if (temp.mode === "abdm") {
 				const rpc = base.getValue("setting_abdm_rpc").find(i => i.default);
 
