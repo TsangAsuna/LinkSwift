@@ -5022,12 +5022,45 @@ button.downloadSubtitle:disabled {
 				target.data("state", "processing");
 				const originalHtml = target.html();
 				target.find(".pl-icon").remove();
+				// 圆环形进度：批量推送时悬浮在页面角落显示总进度，pointer-events:none 不阻挡页面操作
+				const ringColor = temp.color || "#09AAFF";
+				const ringId = `${mount}-push-ring`;
+				const ringC = (2 * Math.PI * 30).toFixed(1);
+				const showRing = (total) => {
+					$(`#${ringId}`).remove();
+					$(document.body).append(`<div id="${ringId}" style="position:fixed;right:24px;bottom:24px;z-index:99999;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;">
+						<svg width="72" height="72" viewBox="0 0 72 72">
+							<circle cx="36" cy="36" r="30" fill="rgba(0,0,0,0.7)" stroke="rgba(255,255,255,0.25)" stroke-width="6"/>
+							<circle class="pl-push-ring-fg" cx="36" cy="36" r="30" fill="none" stroke="${ringColor}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${ringC}" stroke-dashoffset="${ringC}" transform="rotate(-90 36 36)" style="transition:stroke-dashoffset .25s"/>
+							<text class="pl-push-ring-pct" x="36" y="36" text-anchor="middle" dominant-baseline="central" fill="#fff" font-size="14" font-weight="600">0%</text>
+						</svg>
+						<div class="pl-push-ring-label" style="background:rgba(0,0,0,0.7);color:#fff;font-size:12px;line-height:20px;padding:2px 10px;border-radius:10px;">推送中 0 / ${total}</div>
+					</div>`);
+				};
+				const updateRing = (done, total) => {
+					const el = $(`#${ringId}`);
+					if (!el.length) return;
+					el.find(".pl-push-ring-fg").attr("stroke-dashoffset", (2 * Math.PI * 30 * (1 - done / total)).toFixed(1));
+					el.find(".pl-push-ring-pct").text(`${Math.round((done / total) * 100)}%`);
+					el.find(".pl-push-ring-label").text(`推送中 ${done} / ${total}`);
+				};
+				const hideRing = (total, fail) => {
+					const el = $(`#${ringId}`);
+					if (!el.length) return;
+					el.find(".pl-push-ring-fg").attr("stroke-dashoffset", "0");
+					el.find(".pl-push-ring-pct").text("100%");
+					el.find(".pl-push-ring-label").text(fail ? `推送完成，${fail} 个失败` : "全部推送完成");
+					setTimeout(() => el.fadeOut(400, () => el.remove()), 1200);
+				};
 				let ok = 0, fail = 0;
-				for (let n = 0; n < indices.length; n++) {
+				const total = indices.length;
+				if (total >= 2) showRing(total);
+				for (let n = 0; n < total; n++) {
 					const file = files[indices[n]];
 					const link = get.link(file);
 					const name = get.name(file);
-					target.text(`推送中 ${n + 1} / ${indices.length}`);
+					target.text(`推送中 ${n + 1} / ${total}`);
+					updateRing(n, total);
 					const config = {};
 					if (base.isType(get.path) === "function") {
 						const path = get.path(file);
@@ -5045,6 +5078,8 @@ button.downloadSubtitle:disabled {
 					}
 					await base.sleep(150);
 				}
+				updateRing(total, total);
+				hideRing(total, fail);
 				target.html(fail ? `<svg class="pl-icon"><use xlink:href="#pl-icon-fa-x-mark"/></svg><span>${ok} 成功 ${fail} 失败</span>` : `<svg class="pl-icon"><use xlink:href="#pl-icon-fa-check"/></svg><span>${ok} 个已推送</span>`).animate({ opacity: "0.5" }, "slow");
 				await base.sleep(3000);
 				target.removeData("state").css("opacity", "").html(originalHtml);
