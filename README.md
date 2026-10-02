@@ -39,12 +39,17 @@
 ### LinkSwift
 直链获取、UI 美化、支持多种下载器
 
-#### 正式版
+#### 增强版（本 Fork）
+在官方版本基础上：修复迅雷镜像不显示与比特彗星服务设置无法打开等问题；支持解析迅雷云盘文件夹并按文件夹结构推送、镜像地址自动填入比特彗星；下载列表按文件夹分组懒加载；批量推送显示圆环进度。
+
+- Github 国际: [TsangAsuna/LinkSwift/fix/xunlei-mirror-bitcomet-settings/（改）网盘直链下载助手.user.js](https://github.com/TsangAsuna/LinkSwift/raw/fix/xunlei-mirror-bitcomet-settings/（改）网盘直链下载助手.user.js)
+
+#### 正式版（上游）
 - Github 国际: [hmjz100/LinkSwift/（改）网盘直链下载助手.user.js](https://github.com/hmjz100/LinkSwift/raw/main/（改）网盘直链下载助手.user.js)
 - OpenUserJS 国际（更新不及时）: [hmjz100/LinkSwift.user.js](https://openuserjs.org/install/hmjz100/LinkSwift.user.js)
 - 脚本猫 国内: [hmjz100/1604/LinkSwift.user.js](https://scriptcat.org/scripts/code/1604/LinkSwift.user.js)
 
-#### 金丝雀版
+#### 金丝雀版（上游）
 此版本可能不稳定，但有着最新的功能、修复等。
 
 - Github 国际: [hmjz100/LinkSwift/（改）网盘直链下载助手.user.js](https://github.com/hmjz100/LinkSwift/raw/dev/（改）网盘直链下载助手.user.js)
