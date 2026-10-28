@@ -332,7 +332,8 @@
 		$aliyun: {
 			api: {
 				getLink: `https://${location.host.replace("www", "api")}/v2/file/get_download_url`,
-				getShareLink: `https://${location.host.replace("www", "api")}/v2/file/get_share_link_download_url`
+				getShareLink: `https://${location.host.replace("www", "api")}/v2/file/get_share_link_download_url`,
+				listFiles: "https://api.aliyundrive.com/adrive/v3/file/list"
 			},
 			mount: {
 				home: `[class^="header--"]>[class^="actions--"]`,
@@ -350,7 +351,8 @@
 		},
 		$mcloud: {
 			api: {
-				getLink: "https://personal-kd-njs.yun.139.com/hcy/file/getDownloadUrl"
+				getLink: "https://personal-kd-njs.yun.139.com/hcy/file/getDownloadUrl",
+				listFiles: "https://personal-kd-njs.yun.139.com/hcy/file/list"
 			},
 			mount: {
 				home: ".top_button",
@@ -364,7 +366,8 @@
 		$tcloud: {
 			api: {
 				getAccessToken: "https://api.cloud.189.cn/open/oauth2/ssoH5.action",
-				getLink: "https://api.cloud.189.cn/open/file/getFileDownloadUrl.action"
+				getLink: "https://api.cloud.189.cn/open/file/getFileDownloadUrl.action",
+				listFiles: "https://api.cloud.189.cn/open/file/listFiles.action"
 			},
 			mount: {
 				home: "[class*=\"FileHead_file-head-left\"]",
@@ -398,7 +401,8 @@
 			api: {
 				getLink: "https://api.guangyapan.com/nd.bizuserres.s/v1/get_res_download_url",
 				getShareLink: "https://api.guangyapan.com/nd.bizuserres.s/v1/get_share_download_url",
-				getShareToken: "https://api.guangyapan.com/nd.bizuserres.s/v1/get_share_access_token"
+				getShareToken: "https://api.guangyapan.com/nd.bizuserres.s/v1/get_share_access_token",
+				listFiles: "https://api.guangyapan.com/nd.drive.s/v1/files"
 			},
 			mount: {
 				home: `#root #app div > div:has(> .ant-btn.ant-btn-primary.ant-btn-color-primary .ant-btn-icon > .swangpan-icon-upload):has(> .ant-btn.ant-btn-default.ant-btn-color-default  .ant-btn-icon > .swangpan-icon-addfolder)`,
@@ -415,6 +419,7 @@
 					main: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 QuarkPC/6.9.7.761 QuarkCloudDrivePC/6.9.7.761 quark-cloud-drive/2.5.40"
 				},
 				getLink: "https://drive-pc.quark.cn/1/clouddrive/file/download?pr=ucpro&fr=pc&sys=win32&ve=6.9.7.761",
+				listFiles: "https://drive-pc.quark.cn/1/clouddrive/file/sort?pr=ucpro&fr=pc&sys=win32&ve=6.9.7.761",
 				getSocialToken: "https://drive-social-api.quark.cn/1/clouddrive/chat/conv/file/acquire_dl_token?pr=ucpro&fr=pc&sys=win32&ve=6.9.7.761&fr=win&la=zh-CN&ch=pckk%40product_guanwan"
 			},
 			mount: {
@@ -432,7 +437,8 @@
 					main: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) uc-cloud-drive/1.8.8 Chrome/100.0.4896.160 Electron/18.3.5.16-b62cf9c50d Safari/537.36 Channel/ucpan_other_ch",
 					secCh: `"Not=A?Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"`
 				},
-				getLink: "https://pc-api.uc.cn/1/clouddrive/file/download?pr=UCBrowser&fr=pc&sys=win32&ve=1.8.8"
+				getLink: "https://pc-api.uc.cn/1/clouddrive/file/download?pr=UCBrowser&fr=pc&sys=win32&ve=1.8.8",
+				listFiles: "https://pc-api.uc.cn/1/clouddrive/file/sort?pr=UCBrowser&fr=pc&sys=win32&ve=1.8.8"
 			},
 			mount: {
 				home: ".btn-operate .btn-main",
@@ -453,6 +459,7 @@
 				},
 				getLink: "https://api.123pan.cn/api/v2/file/download_info",
 				getShareLink: "https://api.123pan.cn/api/v2/share/download/info",
+				listFiles: "https://www.123pan.com/a/api/file/list/new",
 			},
 			mount: {
 				home: ".home-operator .home-operator-button-group",
@@ -3433,12 +3440,12 @@
 		 * // https://mirror2.com/file.zip
 		 * // https://mirror2.com/file.zip&
 		 */
-		getMirrorList(link, mirror, thread = 2) {
+		getMirrorList(link, mirror, thread = 2, cap = Infinity) {
 			try {
 				const host = new URL(link).host;
 				const mirrors = [];
-				for (let i = 0; i < mirror.length; i++) {
-					for (let j = 0; j < thread; j++) {
+				for (let i = 0; i < mirror.length && mirrors.length < cap; i++) {
+					for (let j = 0; j < thread && mirrors.length < cap; j++) {
 						const item = link.replace(host, mirror[i]) + "&".repeat(j);
 						mirrors.push(item);
 					}
@@ -5061,7 +5068,8 @@ button.downloadSubtitle:disabled {
 					target.text("展开");
 				} else {
 					temp.expandedFolders.add(path);
-					row.after(temp.folderHtml?.[groupIndex] || "");
+					// 行内容在首次展开时才构建（懒渲染）
+					row.after(temp.getGroupRows ? temp.getGroupRows(groupIndex) : "");
 					target.text("收起");
 				}
 			});
@@ -5270,7 +5278,8 @@ button.downloadSubtitle:disabled {
 				const displayName = path ? `${path}/${name}` : name;
 				const size = get.size(v);
 				const link = get.link(v);
-				const mirrors = base.isType(get.mirror) !== "undefined" ? get.mirror(get.link(v)) : undefined;
+				// 镜像列表按需生成：完整列表可达数百条，提前为每一行生成会造成大文件夹批量渲染时卡顿
+				const hasMirror = base.isType(get.mirror) === "function";
 				const groupAttr = groupIndex === undefined ? "" : ` data-group-file="${groupIndex}"`;
 				if (!link || !link.includes("http")) {
 					return `<div class="item"${groupAttr}>
@@ -5327,8 +5336,8 @@ button.downloadSubtitle:disabled {
 				if (temp.mode === "bitcomet") {
 					// 迅雷等网盘的镜像列表可达数百条，全部塞进 href 会生成数十 KB 的 bc:// 地址，
 					// Via 等基于 WebView 的浏览器解析这种巨型自定义协议链接时会卡死整个浏览器（其余标签页全部无响应）
-					// 因此 href 只保留前 5 条镜像用于调起客户端，全量镜像仍可通过“复制”按钮获取
-					const hrefMirrors = mirrors ? String(mirrors).split("\n").slice(0, 5) : [];
+					// 因此 href 只保留前 5 条镜像用于调起客户端，全量镜像仍可通过「复制」按钮获取
+					const hrefMirrors = hasMirror ? String(get.mirror(link, 5) || "").split("\n").filter(Boolean) : [];
 					const finalink = download.tools.convertTo.bitcomet(link, name, headers, null, hrefMirrors);
 					allLink.push(finalink);
 					probe.log("dom-bitcomet-row", `文件 ${i}：href ${finalink.length} 字符`);
@@ -5337,7 +5346,7 @@ button.downloadSubtitle:disabled {
 
 						<a href="${finalink}" class="link ${mount} btn default mini tip" data-title="${config.base.dom.method.bitcomet.normal}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-downward"/></svg>使用 BC 地址下载</a>
 
-						${mirrors ? `<button action="copy" type="file.link.mirrors" class="${mount} btn success mini tip" data-title="${config.base.dom.copy.mirrors}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制镜像</button>` : ""}
+						${hasMirror ? `<button action="copy" type="file.link.mirrors" class="${mount} btn success mini tip" data-title="${config.base.dom.copy.mirrors}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-copy"/></svg>复制镜像</button>` : ""}
 
 						<button action="sendto" type="bitcomet" class="${mount} btn info mini tip" data-title="${config.base.dom.method.bitcomet.sendto}"><svg class="pl-icon"><use xlink:href="#pl-icon-fa-cloud-arrow-up"/></svg><span>推送至下载器</span></button>
 					</div>`;
@@ -5354,13 +5363,18 @@ button.downloadSubtitle:disabled {
 			};
 			if (hasGroups) {
 				temp.folderGroups = groupPaths;
-				temp.folderHtml = groupHtml;
+				// 行 HTML 懒构建：折叠的分组只在用户点"展开"时才生成 DOM 字符串，
+				// 避免解析几百个文件时一次性构建全部行（含镜像链接）导致弹窗卡顿
+				temp.folderHtml = groupPaths.map(() => "");
+				temp.getGroupRows = (groupIndex) => {
+					temp.folderHtml[groupIndex] ||= groups.get(groupPaths[groupIndex]).map(i => buildFileRow(files[i], i, groupIndex)).join("");
+					return temp.folderHtml[groupIndex];
+				};
 				groupPaths.forEach((path, groupIndex) => {
 					const indices = groups.get(path);
-					groupHtml[groupIndex] = indices.map(i => buildFileRow(files[i], i, groupIndex)).join("");
 					if (path === "") {
 						// 未分组的文件（直接勾选的）按原样渲染
-						content.find(`.${mount}.main`).append(groupHtml[groupIndex]);
+						content.find(`.${mount}.main`).append(temp.getGroupRows(groupIndex));
 						return;
 					}
 					const items = indices.map(i => files[i]);
@@ -5375,7 +5389,7 @@ button.downloadSubtitle:disabled {
 						<button action="togglefolder" class="${mount} btn default mini">${expanded ? "收起" : "展开"}</button>
 						${pushButton}
 					</div>
-					${expanded ? groupHtml[groupIndex] : ""}`);
+					${expanded ? temp.getGroupRows(groupIndex) : ""}`);
 				});
 			} else {
 				temp.folderGroups = null;
@@ -6514,9 +6528,9 @@ button.downloadSubtitle:disabled {
 			}
 			return base.clone(items);
 		},
-		async getFilesList(dirs, accessToken, proc = 0) {
+		async getFilesList(dirs, accessToken, proc = 0, prefix = "") {
 			let cnt = 0;
-			async function get(targets) {
+			async function get(targets, prefix) {
 				let files = [];
 				for (const dir of targets) {
 					$doc.find(".loading-popup .loading-title").html(`文件获取中`);
@@ -6525,12 +6539,15 @@ button.downloadSubtitle:disabled {
 					cnt++;
 					if (res.list?.length && (res.errno === 0 || res.errmsg === "succ")) {
 						const subFiles = res.list.filter(f => !f.isdir);
+						// 记录文件在所选文件夹内的相对路径，供推送下载器时按目录创建子文件夹
+						subFiles.forEach(f => (f.folderPath = prefix));
 						proc += subFiles.length;
 						$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} 个文件~</div><div>${dir.path}</div>`);
 						files = files.concat(subFiles);
 						const subDirs = res.list.filter(f => f.isdir);
 						if (subDirs.length > 0) {
-							files = files.concat(await get(subDirs));
+							const dirName = dir.server_filename || (dir.path.split("/").filter(Boolean).pop() || "");
+							files = files.concat(await get(subDirs, prefix ? `${prefix}/${dirName}` : dirName));
 						}
 					}
 					if (cnt >= 50) {
@@ -6541,7 +6558,7 @@ button.downloadSubtitle:disabled {
 				}
 				return files;
 			};
-			return await get(dirs);
+			return await get(dirs, prefix);
 		},
 		async getLink() {
 			let token = base.getValue("baidu_access_token") || await this.getToken().catch(e => {
@@ -6612,6 +6629,7 @@ button.downloadSubtitle:disabled {
 					dir: v => v.isdir === 1,
 					name: v => (v.server_filename || v.filename),
 					size: v => v.size,
+					path: v => v.folderPath || "",
 					link: v => {
 						if (!v.dlink || !v.dlink.startsWith("http")) return v.dlink;
 						const url = new URL(v.dlink);
@@ -6957,6 +6975,27 @@ button.downloadSubtitle:disabled {
 			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
 
 			if (temp.page === "home") {
+				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
+				if (selects.some(item => item.type === "folder")) {
+					const token = base.getStorage("token");
+					if (!token || !token.token_type || !token.access_token) {
+						return message.error("提示：<br/>请先登录网盘~");
+					}
+					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					const expanded = [];
+					for (const item of selects) {
+						if (item.type === "folder") {
+							expanded.push(...await this.listFolderFiles(item.fileId, item.driveId, item.name).catch(e => {
+								if (e instanceof Error) throw e;
+								throw new Error(e?.message || e || "[阿里云盘] 解析文件夹失败");
+							}));
+						} else {
+							expanded.push(item);
+						}
+					}
+					if (!expanded.length) throw new Error("提示：<br/>所选文件夹里没有文件哦~");
+					selects = expanded;
+				}
 				selects = selects.filter(item => item.type === "file");
 				const token = base.getStorage("token");
 				if (!token || !token.token_type || !token.access_token) {
@@ -6975,6 +7014,7 @@ button.downloadSubtitle:disabled {
 					dir: v => v.type === "folder",
 					name: v => v.name,
 					size: v => v.size,
+					path: v => v.folderPath || "",
 					link: v => (v.downloadUrl || v.url),
 				},
 				headers: {},
@@ -7044,6 +7084,42 @@ button.downloadSubtitle:disabled {
 			}
 
 			return base.clone(items);
+		},
+		/**
+		 * 递归列出文件夹内的全部文件
+		 * @author hmjz100
+		 * @description 通过 adrive/v3/file/list 分页遍历所选文件夹，记录文件在所选文件夹内的相对路径（folderPath）
+		 * @param {String} folderId - 文件夹 ID
+		 * @param {String} driveId - 网盘 ID
+		 * @param {String} [prefix=""] - 相对路径前缀
+		 * @param {Number} [depth=0] - 递归深度保护
+		 * @returns {Promise<Array>} 展开后的文件列表
+		 */
+		async listFolderFiles(folderId, driveId, prefix = "", depth = 0) {
+			if (depth > 8) return [];
+			const token = base.getStorage("token");
+			if (!token || !token.access_token) throw new Error("提示：<br/>请先登录网盘~");
+			const headers = { "Authorization": `${token.token_type} ${token.access_token}`, "X-Canary": "client=windows,app=adrive,version=v6.0.0" };
+			const files = [];
+			let marker = "";
+			let pages = 0;
+			do {
+				const body = { drive_id: driveId, parent_file_id: folderId, limit: 200, marker: marker || undefined, order_by: "name", order_direction: "ASC" };
+				const res = await base.post(config.$aliyun.api.listFiles, body, headers).catch(e => {
+					throw new Error(e?.message || e || "[阿里云盘] 列出文件夹内容失败");
+				});
+				if (res?.code) throw new Error(res.message || res.code);
+				for (const item of (res.items || [])) {
+					if (item.type === "folder") {
+						files.push(...await this.listFolderFiles(item.file_id, item.drive_id || driveId, prefix ? `${prefix}/${item.name}` : item.name, depth + 1));
+					} else {
+						files.push({ fileId: item.file_id, driveId: item.drive_id || driveId, name: item.name, size: item.size, type: "file", folderPath: prefix });
+					}
+				}
+				marker = res.next_marker || "";
+				if (++pages >= 50) break;
+			} while (marker);
+			return files;
 		},
 		getSelectedList() {
 			try {
@@ -7237,6 +7313,84 @@ button.downloadSubtitle:disabled {
 			const l = md5(a + ":" + n);
 			return md5(A + l).toUpperCase();
 		},
+		/**
+		 * 构建移动云盘 hcy 接口的公共请求头
+		 * @author hmjz100
+		 * @description 时间戳 + 随机密钥 + 签名（Mcloud-Sign），与页面 Web 端的请求头一致
+		 * @param {Object} body - 请求体（签名需要）
+		 * @returns {Object} 请求头对象
+		 */
+		buildHeaders(body) {
+			const time = new Date(+new Date() + 8 * 3600 * 1000).toJSON().substr(0, 19).replace("T", " ");
+			const key = this.getRandomString(16);
+			const sign = this.getSign(undefined, body, time, key);
+			const getCookie = (name) => {
+				const cname = name + "=";
+				const ca = document.cookie.split(";");
+				for (let i = 0; i < ca.length; i++) {
+					const c = ca[i].trim();
+					if (c.indexOf(cname) == 0) return c.substring(cname.length, c.length);
+				}
+				return "";
+			}
+			return {
+				"Authorization": getCookie("authorization"),
+				"Caller": "web",
+				"Content-Type": "application/json;charset=UTF-8",
+				"CMS-DEVICE": "default",
+				"Mcloud-Channel": "1000101",
+				"Mcloud-Client": "10701",
+				"Mcloud-Sign": time + "," + key + "," + sign,
+				"Mcloud-Version": "7.14.2",
+				"X-DeviceInfo": "||9|7.17.0|edge||||windows 10||zh-CN|||",
+				"X-Huawei-ChannelSrc": "10000034",
+				"X-Inner-Ntwk": "2",
+				"X-M4C-Caller": "PC",
+				"X-M4C-Src": "10002",
+				"X-SvcType": "1",
+				"X-Yun-Api-Version": "v1",
+				"X-Yun-App-Channel": "10000034",
+				"X-Yun-Channel-Source": "10000034",
+				"X-Yun-Client-Info": "||9|7.17.0|edge||||windows 10||zh-CN|||||",
+				"X-Yun-Module-Type": "100",
+				"X-Yun-Svc-Type": "1",
+				"X-Yun-Url-Type": "3"
+			};
+		},
+		/**
+		 * 递归列出文件夹内的全部文件
+		 * @author hmjz100
+		 * @description 通过 hcy/file/list 分页遍历所选文件夹，记录文件在所选文件夹内的相对路径（folderPath）
+		 * @param {String} catalogID - 文件夹 ID
+		 * @param {String} [prefix=""] - 相对路径前缀
+		 * @param {Number} [depth=0] - 递归深度保护
+		 * @returns {Promise<Array>} 展开后的文件列表
+		 */
+		async listFolderFiles(catalogID, prefix = "", depth = 0) {
+			if (depth > 8) return [];
+			const files = [];
+			let start = 1;
+			let guard = 0;
+			do {
+				const body = { parentCatalogID: catalogID, startNumber: start, endNumber: start + 99 };
+				const res = await base.post(config.$mcloud.api.listFiles, body, this.buildHeaders(body)).catch(e => {
+					throw new Error(e?.message || e || "[中国移动云盘] 列出文件夹内容失败");
+				});
+				if (!res?.success) throw new Error(res?.message || "[中国移动云盘] 列出文件夹内容失败");
+				const catalogs = res.data?.catalogList || [];
+				const contents = res.data?.contentList || [];
+				for (const dir of catalogs) {
+					files.push(...await this.listFolderFiles(dir.catalogID, prefix ? `${prefix}/${dir.catalogName}` : dir.catalogName, depth + 1));
+				}
+				for (const file of contents) {
+					file.folderPath = prefix;
+					files.push(file);
+				}
+				if (catalogs.length + contents.length < 100) break;
+				start += 100;
+			} while (++guard < 50);
+			return files;
+		},
 		async getFileUrl(item, index) {
 			if (item.downloadUrl) return {
 				index,
@@ -7246,41 +7400,7 @@ button.downloadSubtitle:disabled {
 				const body = {
 					fileId: item.contentID
 				}
-				const time = new Date(+new Date() + 8 * 3600 * 1000).toJSON().substr(0, 19).replace("T", " ");
-				const key = this.getRandomString(16);
-				const sign = this.getSign(undefined, body, time, key);
-				const getCookie = (name) => {
-					const cname = name + "=";
-					const ca = document.cookie.split(";");
-					for (let i = 0; i < ca.length; i++) {
-						const c = ca[i].trim();
-						if (c.indexOf(cname) == 0) return c.substring(cname.length, c.length);
-					}
-					return "";
-				}
-				const res = await base.post(config.$mcloud.api.getLink, body, {
-					"Authorization": getCookie("authorization"),
-					"Caller": "web",
-					"Content-Type": "application/json;charset=UTF-8",
-					"CMS-DEVICE": "default",
-					"Mcloud-Channel": "1000101",
-					"Mcloud-Client": "10701",
-					"Mcloud-Sign": time + "," + key + "," + sign,
-					"Mcloud-Version": "7.14.2",
-					"X-DeviceInfo": "||9|7.17.0|edge||||windows 10||zh-CN|||",
-					"X-Huawei-ChannelSrc": "10000034",
-					"X-Inner-Ntwk": "2",
-					"X-M4C-Caller": "PC",
-					"X-M4C-Src": "10002",
-					"X-SvcType": "1",
-					"X-Yun-Api-Version": "v1",
-					"X-Yun-App-Channel": "10000034",
-					"X-Yun-Channel-Source": "10000034",
-					"X-Yun-Client-Info": "||9|7.17.0|edge||||windows 10||zh-CN|||||",
-					"X-Yun-Module-Type": "100",
-					"X-Yun-Svc-Type": "1",
-					"X-Yun-Url-Type": "3"
-				});
+				const res = await base.post(config.$mcloud.api.getLink, body, this.buildHeaders(body));
 				if (res.success) {
 					return { index, downloadUrl: res.data.url };
 				} else {
@@ -7305,7 +7425,22 @@ button.downloadSubtitle:disabled {
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
 			if (selects.every(item => !item.contentID && !item.contentName)) throw new Error("提示：<br/>请打开文件夹后再勾选文件~");
 			if (temp.page === "home") {
-				selects = selects.filter(item => item.contentID && item.contentName && item.contentSuffix);
+				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
+				const folders = selects.filter(item => item.catalogID && item.catalogName);
+				if (folders.length) {
+					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					const expanded = [];
+					for (const dir of folders) {
+						expanded.push(...await this.listFolderFiles(dir.catalogID, dir.catalogName).catch(e => {
+							if (e instanceof Error) throw e;
+							throw new Error(e?.message || e || "[中国移动云盘] 解析文件夹失败");
+						}));
+					}
+					selects = expanded.concat(selects.filter(item => item.contentID && item.contentName && item.contentSuffix));
+					if (!selects.length) throw new Error("提示：<br/>所选文件夹里没有文件哦~");
+				} else {
+					selects = selects.filter(item => item.contentID && item.contentName && item.contentSuffix);
+				}
 				const batchSize = 15;
 				let proc = 0;
 				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
@@ -7337,6 +7472,7 @@ button.downloadSubtitle:disabled {
 					dir: v => (v.dirEtag || v.caName),
 					name: v => (v.contentName || v.coName),
 					size: v => (v.contentSize || v.coSize),
+					path: v => v.folderPath || "",
 					link: v => v.downloadUrl,
 				},
 				headers: {},
@@ -7481,6 +7617,41 @@ button.downloadSubtitle:disabled {
 			}
 			return undefined;
 		},
+		/**
+		 * 递归列出文件夹内的全部文件
+		 * @author hmjz100
+		 * @description 通过 open/file/listFiles.action 分页遍历所选文件夹，记录文件在所选文件夹内的相对路径（folderPath）
+		 * @param {String} folderId - 文件夹 ID
+		 * @param {String} token - 访问令牌
+		 * @param {String} [prefix=""] - 相对路径前缀
+		 * @param {Number} [depth=0] - 递归深度保护
+		 * @returns {Promise<Array>} 展开后的文件列表
+		 */
+		async listFolderFiles(folderId, token, prefix = "", depth = 0) {
+			if (depth > 8) return [];
+			const files = [];
+			let pageNum = 1;
+			let guard = 0;
+			do {
+				const time = Date.now();
+				const sign = md5(`AccessToken=${token}&Timestamp=${time}&folderId=${folderId}`).toString();
+				const res = await base.get(`${config.$tcloud.api.listFiles}?folderId=${folderId}&pageNum=${pageNum}&pageSize=100&recursive=false&orderBy=1&order=asc`, { "Accesstoken": token, "Timestamp": time, "Sign-Type": 1, "Signature": sign }).catch(e => {
+					throw new Error(e?.message || e || "[天翼云盘] 列出文件夹内容失败");
+				});
+				if (res.res_code != 0 && res.errorcode) throw new Error(res.res_message || res.errorcode || "[天翼云盘] 列出文件夹内容失败");
+				const list = res.fileListAO?.fileList || [];
+				for (const item of list) {
+					if (item.isFolder) {
+						files.push(...await this.listFolderFiles(item.id, token, prefix ? `${prefix}/${item.name}` : item.name, depth + 1));
+					} else {
+						files.push({ fileId: item.id, fileName: item.name, size: item.size, isFolder: 0, folderPath: prefix });
+					}
+				}
+				if (list.length < 100) break;
+				pageNum++;
+			} while (++guard < 50);
+			return files;
+		},
 		async getFileUrl(item, index, token) {
 			if (item.downloadUrl) {
 				return {
@@ -7514,6 +7685,26 @@ button.downloadSubtitle:disabled {
 			let selects = this.getSelectedList();
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
 			if (selects.every(item => item.isFolder)) throw new Error("提示：<br/>请打开文件夹后再勾选文件~");
+			// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
+			if (selects.some(item => item.isFolder)) {
+				const accessToken = base.getStorage("accessToken");
+				if (!accessToken) throw new Error("提示：<br/>请先登录网盘~");
+				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
+				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+				const expanded = [];
+				for (const item of selects) {
+					if (item.isFolder) {
+						expanded.push(...await this.listFolderFiles(item.fileId, accessToken, item.fileName).catch(e => {
+							if (e instanceof Error) throw e;
+							throw new Error(e?.message || e || "[天翼云盘] 解析文件夹失败");
+						}));
+					} else {
+						expanded.push(item);
+					}
+				}
+				if (!expanded.length) throw new Error("提示：<br/>所选文件夹里没有文件哦~");
+				selects = expanded;
+			}
 			selects = selects.filter(item => !item.isFolder)
 			$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
 			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取状态~</div>`);
@@ -7556,6 +7747,7 @@ button.downloadSubtitle:disabled {
 					dir: v => v.isFolder,
 					name: v => v.fileName,
 					size: v => v.size,
+					path: v => v.folderPath || "",
 					link: v => v.downloadUrl,
 				},
 				headers: {},
@@ -7955,7 +8147,7 @@ button.downloadSubtitle:disabled {
 					size: v => v.size,
 					link: v => v.downloadUrl,
 					path: v => v.folderPath || "",
-					mirror: v => base.getMirrorList(v, config.$xunlei.api.mirror),
+					mirror: (v, cap) => base.getMirrorList(v, config.$xunlei.api.mirror, 2, cap),
 				},
 				headers: {},
 				convert: {},
@@ -8145,12 +8337,60 @@ button.downloadSubtitle:disabled {
 				throw new Error("提示：<br/>请先登录网盘后再刷新页面呢~");
 			}
 		},
+		/**
+		 * 递归列出文件夹内的全部文件
+		 * @author hmjz100
+		 * @description 通过 nd.drive.s/v1/files 分页遍历所选文件夹，记录文件在所选文件夹内的相对路径（folderPath）
+		 * @param {String} folderId - 文件夹 ID
+		 * @param {Object} token - 令牌（credentials + captcha）
+		 * @param {String} [prefix=""] - 相对路径前缀
+		 * @param {Number} [depth=0] - 递归深度保护
+		 * @returns {Promise<Array>} 展开后的文件列表
+		 */
+		async listFolderFiles(folderId, token, prefix = "", depth = 0) {
+			if (depth > 8) return [];
+			const headers = { "Authorization": `${token.credentials?.token_type} ${token.credentials?.access_token}`, "Content-Type": "application/json", "X-Captcha-Token": token.captcha.captcha_token, "X-Device-Id": token.deviceid };
+			const files = [];
+			let pageToken = "";
+			let guard = 0;
+			do {
+				const res = await base.get(`${config.$guangya.api.listFiles}?parent_id=${folderId}&limit=100${pageToken ? "&page_token=" + encodeURIComponent(pageToken) : ""}`, headers).catch(e => {
+					throw new Error(e?.message || e || "[光鸭云盘] 列出文件夹内容失败");
+				});
+				for (const item of (res?.files || [])) {
+					if (item.kind === "drive#folder") {
+						files.push(...await this.listFolderFiles(item.id, token, prefix ? `${prefix}/${item.name}` : item.name, depth + 1));
+					} else if (item.kind === "drive#file") {
+						files.push({ fileId: item.id, fileName: item.name, fileSize: item.size, resType: 0, folderPath: prefix });
+					}
+				}
+				pageToken = res?.next_page_token || "";
+			} while (pageToken && ++guard < 50);
+			return files;
+		},
 		async getLink() {
 			const selects = this.getSelectedList();
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
 			if (selects.every(item => item.resType == 2)) throw new Error("提示：<br/>请打开文件夹后再勾选文件~");
 			if (temp.page === "home") {
 				const token = this.getToken();
+				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
+				if (selects.some(item => item.resType == 2)) {
+					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					const expanded = [];
+					for (const item of selects) {
+						if (item.resType == 2) {
+							expanded.push(...await this.listFolderFiles(item.fileId, token, item.fileName).catch(e => {
+								if (e instanceof Error) throw e;
+								throw new Error(e?.message || e || "[光鸭云盘] 解析文件夹失败");
+							}));
+						} else {
+							expanded.push(item);
+						}
+					}
+					if (!expanded.length) throw new Error("提示：<br/>所选文件夹里没有文件哦~");
+					selects = expanded;
+				}
 				const batchSize = 15;
 				let proc = 0;
 				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
@@ -8215,6 +8455,7 @@ button.downloadSubtitle:disabled {
 					dir: v => v.resType == 2,
 					name: v => v.fileName,
 					size: v => v.fileSize,
+					path: v => v.folderPath || "",
 					link: v => v.downloadUrl,
 				},
 				headers: {},
@@ -8438,6 +8679,40 @@ button.downloadSubtitle:disabled {
 			base.setValue("quark_social_token", res.data);
 			return res?.data?.token || "";
 		},
+		/**
+		 * 递归列出文件夹内的全部文件
+		 * @author hmjz100
+		 * @description 通过 file/sort 分页遍历所选文件夹，记录文件在所选文件夹内的相对路径（folderPath）
+		 * @param {String} pdirFid - 文件夹 ID
+		 * @param {String} [prefix=""] - 相对路径前缀
+		 * @param {Number} [depth=0] - 递归深度保护
+		 * @returns {Promise<Array>} 展开后的文件列表
+		 */
+		async listFolderFiles(pdirFid, prefix = "", depth = 0) {
+			if (depth > 8) return [];
+			const headers = { "Cookie": String(document.cookie), "User-Agent": config.$quark.api.ua.main, "Referer": "https://pan.quark.cn/" };
+			const files = [];
+			let page = 1;
+			let guard = 0;
+			do {
+				const url = `${config.$quark.api.listFiles}&pdir_fid=${encodeURIComponent(pdirFid)}&_page=${page}&_size=100&_fetch_total=1&_fetch_sub_dirs=0&_sort=file_type:asc,file_name:asc`;
+				const res = await base.get(url, headers).catch(e => {
+					throw new Error(e?.message || e || "[夸克网盘] 列出文件夹内容失败");
+				});
+				if (res?.code !== 0) throw new Error(res?.message || "[夸克网盘] 列出文件夹内容失败");
+				const list = res.data?.list || [];
+				for (const item of list) {
+					if (item.file_type === 1) {
+						files.push(...await this.listFolderFiles(item.fid, prefix ? `${prefix}/${item.file_name}` : item.file_name, depth + 1));
+					} else {
+						files.push({ fid: item.fid, file: true, file_name: item.file_name, size: item.size, folderPath: prefix });
+					}
+				}
+				if (list.length < 100) break;
+				page++;
+			} while (++guard < 50);
+			return files;
+		},
 		async getLink() {
 			let selects = this.getSelectedList();
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
@@ -8446,6 +8721,23 @@ button.downloadSubtitle:disabled {
 				const data = [];
 				const batchSize = 15;
 				let proc = 0;
+				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
+				if (selects.some(item => item.file === false)) {
+					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					const expanded = [];
+					for (const item of selects) {
+						if (item.file === false) {
+							expanded.push(...await this.listFolderFiles(item.fid, item.file_name).catch(e => {
+								if (e instanceof Error) throw e;
+								throw new Error(e?.message || e || "[夸克网盘] 解析文件夹失败");
+							}));
+						} else {
+							expanded.push(item);
+						}
+					}
+					if (!expanded.length) throw new Error("提示：<br/>所选文件夹里没有文件哦~");
+					selects = expanded;
+				}
 				selects = selects.filter(item => item.file === true)
 				for (let i = 0; i < selects.length; i += batchSize) {
 					// 获取当前批次文件
@@ -8471,7 +8763,12 @@ button.downloadSubtitle:disabled {
 					}
 
 					// 合并响应数据
-					if (res.data) data.push(...res.data);
+					if (res.data) {
+						// 响应项与选中项按 fid 对应，把选中文件夹展开时记录的相对路径带给响应项
+						const pathMap = new Map(batch.map(item => [item.fid, item.folderPath || ""]));
+						res.data.forEach(d => { if (pathMap.has(d.fid)) d.folderPath = pathMap.get(d.fid); });
+						data.push(...res.data);
+					}
 					// 更新处理进度
 					proc += batch.length;
 					// 更新UI显示
@@ -8485,6 +8782,7 @@ button.downloadSubtitle:disabled {
 						dir: v => v.file === false,
 						name: v => v.file_name,
 						size: v => v.size,
+						path: v => v.folderPath || "",
 						link: v => v.download_url,
 					},
 					headers: { "User-Agent": config.$quark.api.ua.main, "Cookie": String(document.cookie) },
@@ -8555,6 +8853,7 @@ button.downloadSubtitle:disabled {
 						dir: v => v.file === false,
 						name: v => v.file_name,
 						size: v => v.size,
+						path: v => v.folderPath || "",
 						link: v => v.download_url,
 					},
 					headers: {
@@ -8720,14 +9019,62 @@ button.downloadSubtitle:disabled {
 				element.append($button);
 			});
 		},
+		/**
+		 * 递归列出文件夹内的全部文件
+		 * @author hmjz100
+		 * @description 通过 file/sort 分页遍历所选文件夹，记录文件在所选文件夹内的相对路径（folderPath）
+		 * @param {String} pdirFid - 文件夹 ID
+		 * @param {String} [prefix=""] - 相对路径前缀
+		 * @param {Number} [depth=0] - 递归深度保护
+		 * @returns {Promise<Array>} 展开后的文件列表
+		 */
+		async listFolderFiles(pdirFid, prefix = "", depth = 0) {
+			if (depth > 8) return [];
+			const headers = { "Cookie": String(document.cookie), "User-Agent": config.$uc.api.ua.main, "Sec-Ch-Ua": config.$uc.api.ua.secCh, "Referer": "https://drive.uc.cn/" };
+			const files = [];
+			let page = 1;
+			let guard = 0;
+			do {
+				const url = `${config.$uc.api.listFiles}&pdir_fid=${encodeURIComponent(pdirFid)}&_page=${page}&_size=100&_fetch_total=1&_fetch_sub_dirs=0&_sort=file_type:asc,file_name:asc`;
+				const res = await base.get(url, headers).catch(e => {
+					throw new Error(e?.message || e || "[UC网盘] 列出文件夹内容失败");
+				});
+				if (res?.code !== 0) throw new Error(res?.message || "[UC网盘] 列出文件夹内容失败");
+				const list = res.data?.list || [];
+				for (const item of list) {
+					if (item.file_type === 1) {
+						files.push(...await this.listFolderFiles(item.fid, prefix ? `${prefix}/${item.file_name}` : item.file_name, depth + 1));
+					} else {
+						files.push({ fid: item.fid, file: true, file_name: item.file_name, size: item.size, folderPath: prefix });
+					}
+				}
+				if (list.length < 100) break;
+				page++;
+			} while (++guard < 50);
+			return files;
+		},
 		async getLink() {
 			let selects = this.getSelectedList();
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
 			if (selects.every(item => !item.file)) throw new Error("提示：<br/>请打开文件夹后再勾选文件~");
 			if (temp.page === "home") {
-				const data = [];
-				const batchSize = 15;
-				let proc = 0;
+				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
+				if (selects.some(item => item.file === false)) {
+					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					const expanded = [];
+					for (const item of selects) {
+						if (item.file === false) {
+							expanded.push(...await this.listFolderFiles(item.fid, item.file_name).catch(e => {
+								if (e instanceof Error) throw e;
+								throw new Error(e?.message || e || "[UC网盘] 解析文件夹失败");
+							}));
+						} else {
+							expanded.push(item);
+						}
+					}
+					if (!expanded.length) throw new Error("提示：<br/>所选文件夹里没有文件哦~");
+					selects = expanded;
+				}
 				selects = selects.filter(item => item.file === true)
 				for (let i = 0; i < selects.length; i += batchSize) {
 					// 获取当前批次文件
@@ -8752,7 +9099,12 @@ button.downloadSubtitle:disabled {
 					}
 
 					// 合并响应数据
-					if (res.data) data.push(...res.data);
+					if (res.data) {
+						// 响应项与选中项按 fid 对应，把选中文件夹展开时记录的相对路径带给响应项
+						const pathMap = new Map(batch.map(item => [item.fid, item.folderPath || ""]));
+						res.data.forEach(d => { if (pathMap.has(d.fid)) d.folderPath = pathMap.get(d.fid); });
+						data.push(...res.data);
+					}
 					// 更新处理进度
 					proc += batch.length;
 					// 更新UI显示
@@ -8766,6 +9118,7 @@ button.downloadSubtitle:disabled {
 						dir: v => v.file === false,
 						name: v => v.file_name,
 						size: v => v.size,
+						path: v => v.folderPath || "",
 						link: v => v.download_url,
 					},
 					headers: { "User-Agent": config.$uc.api.ua.main, "Sec-Ch-Ua": config.$uc.api.ua.secCh },
@@ -8833,6 +9186,7 @@ button.downloadSubtitle:disabled {
 						dir: v => v.file === false,
 						name: v => v.file_name,
 						size: v => v.size,
+						path: v => v.folderPath || "",
 						link: v => v.download_url,
 					},
 					headers: { "User-Agent": config.$uc.api.ua.main, "Sec-Ch-Ua": config.$uc.api.ua.secCh },
@@ -9062,6 +9416,41 @@ button.downloadSubtitle:disabled {
 			const uuid = base.getStorage("LoginUuid");
 			return uuid;
 		},
+		/**
+		 * 递归列出文件夹内的全部文件
+		 * @author hmjz100
+		 * @description 通过 a/api/file/list/new 分页遍历所选文件夹，记录文件在所选文件夹内的相对路径（folderPath）
+		 * @param {String} parentFileId - 文件夹 ID
+		 * @param {String} token - 访问令牌
+		 * @param {String} uuid - 用户标识
+		 * @param {String} [prefix=""] - 相对路径前缀
+		 * @param {Number} [depth=0] - 递归深度保护
+		 * @returns {Promise<Array>} 展开后的文件列表
+		 */
+		async listFolderFiles(parentFileId, token, uuid, prefix = "", depth = 0) {
+			if (depth > 8) return [];
+			const headers = { "Accept": "application/json, text/plain, */*", "Content-Type": "application/json; charset=UTF-8", "Authorization": `Bearer ${token}`, "User-Agent": config.$123pan.api.ua.main, "Platform": "web", "Platform_os": config.$123pan.api.ua.os, "App-Version": config.$123pan.api.ua.version, "LoginUuid": uuid || "" };
+			const files = [];
+			let offset = 0;
+			let guard = 0;
+			do {
+				const res = await base.post(`${config.$123pan.api.listFiles}?isRank=false`, { "driveId": 0, "parentFileId": parentFileId, "limit": 100, "lastFileId": 0, "orderBy": "file_name", "orderDirection": "asc", "trashed": false, "SearchData": "", "OnlySearchAbnormalFile": 0, "Offset": offset }, headers).catch(e => {
+					throw new Error(e?.message || e || "[123云盘] 列出文件夹内容失败");
+				});
+				if (res?.code !== 0) throw new Error(res?.message || "[123云盘] 列出文件夹内容失败");
+				const list = res.data?.InfoList || [];
+				for (const item of list) {
+					if (item.Type !== 0) {
+						files.push(...await this.listFolderFiles(item.FileId, token, uuid, prefix ? `${prefix}/${item.FileName}` : item.FileName, depth + 1));
+					} else {
+						files.push({ ...item, folderPath: prefix });
+					}
+				}
+				if (list.length < 100) break;
+				offset += 100;
+			} while (++guard < 50);
+			return files;
+		},
 		async getLink() {
 			let selects = this.getSelectedList();
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
@@ -9069,9 +9458,26 @@ button.downloadSubtitle:disabled {
 			if (temp.page === "home") {
 				const token = this.getToken();
 				const uuid = this.getUUID();
+				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
+				if (selects.some(item => item.Type !== 0)) {
+					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					const expanded = [];
+					for (const item of selects) {
+						if (item.Type !== 0) {
+							expanded.push(...await this.listFolderFiles(item.FileId, token, uuid, item.FileName).catch(e => {
+								if (e instanceof Error) throw e;
+								throw new Error(e?.message || e || "[123云盘] 解析文件夹失败");
+							}));
+						} else {
+							expanded.push(item);
+						}
+					}
+					if (!expanded.length) throw new Error("提示：<br/>所选文件夹里没有文件哦~");
+					selects = expanded;
+				}
+				selects = selects.filter(item => item.Type === 0);
 				const batchSize = 15;
 				let proc = 0;
-				selects = selects.filter(item => item.Type === 0);
 				for (let i = 0; i < selects.length; i += batchSize) {
 					const batch = selects.slice(i, i + batchSize);
 					const queue = [];
@@ -9100,6 +9506,7 @@ button.downloadSubtitle:disabled {
 						dir: v => v.Type !== 0,
 						name: v => v.FileName,
 						size: v => v.Size,
+						path: v => v.folderPath || "",
 						link: v => v.DownloadUrl || v.DownloadURL,
 					},
 					headers: {},
@@ -9152,6 +9559,7 @@ button.downloadSubtitle:disabled {
 						dir: v => v.Type !== 0,
 						name: v => v.FileName,
 						size: v => v.Size,
+						path: v => v.folderPath || "",
 						link: v => v.DownloadUrl || v.DownloadURL,
 					},
 					headers: {},
