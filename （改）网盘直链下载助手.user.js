@@ -5057,7 +5057,7 @@ button.downloadSubtitle:disabled {
 								if (path) config.folderPath = path;
 							}
 							if (base.isType(get.mirror) === "function") {
-								const mirrorList = get.mirror(link);
+								const mirrorList = get.mirror(link, 100); // 裁到 100 条：404 条 ~44KB 的表单体可能超出比特彗星内嵌服务器的处理上限，导致镜像字段被丢弃
 								if (mirrorList) config.mirror_url_list = mirrorList;
 							}
 							res = await download.tools.sendTo.bitcomet(link, name, headers, Object.keys(config).length ? config : undefined);
@@ -5166,7 +5166,7 @@ button.downloadSubtitle:disabled {
 						if (path) config.folderPath = path;
 					}
 					if (base.isType(get.mirror) === "function") {
-						const mirrorList = get.mirror(link);
+						const mirrorList = get.mirror(link, 100); // 裁到 100 条：404 条 ~44KB 的表单体可能超出比特彗星内嵌服务器的处理上限，导致镜像字段被丢弃
 						if (mirrorList) config.mirror_url_list = mirrorList;
 					}
 					try {
@@ -5364,8 +5364,8 @@ button.downloadSubtitle:disabled {
 				if (temp.mode === "bitcomet") {
 					// 迅雷等网盘的镜像列表可达数百条，全部塞进 href 会生成数十 KB 的 bc:// 地址，
 					// Via 等基于 WebView 的浏览器解析这种巨型自定义协议链接时会卡死整个浏览器（其余标签页全部无响应）
-					// 因此 href 只保留前 5 条镜像用于调起客户端，全量镜像仍可通过「复制」按钮获取
-					const hrefMirrors = hasMirror ? String(get.mirror(link, 5) || "").split("\n").filter(Boolean) : [];
+					// 因此 href 只保留前 20 条镜像用于调起客户端，全量镜像仍可通过「复制」按钮获取
+					const hrefMirrors = hasMirror ? String(get.mirror(link, 20) || "").split("\n").filter(Boolean) : [];
 					const finalink = download.tools.convertTo.bitcomet(link, name, headers, null, hrefMirrors);
 					allLink.push(finalink);
 					probe.log("dom-bitcomet-row", `文件 ${i}：href ${finalink.length} 字符`);
@@ -5749,12 +5749,15 @@ button.downloadSubtitle:disabled {
 								if (key === "folderPath") { folderPath = String(value || ""); continue; }
 								data.set(key, value);
 							}
+							// v1.1.1 起比特彗星面板就需要这个开关字段，镜像才会随任务写入
+							if (data.has("mirror_url_list")) data.set("checkboxCustomHeadersForMirrors", "on");
 							// 在配置的存储路径下按云盘内的文件夹结构创建子目录；未配置存储路径时无法确定基准目录，保持默认行为
 							if (folderPath && rpc.dir) {
 								const sub = folderPath.split("/").filter(Boolean).join("\\") + "\\";
 								data.set("save_path", rpc.dir.replace(/[\\/]+$/, "") + "\\" + sub);
 							}
 						}
+						probe.log("bitcomet-body", `body=${data.toString().length} 字符, mirrors=${(data.get("mirror_url_list") || "").split("\n").filter(Boolean).length} 条`);
 						try {
 							const res = await base.post(url, data, {
 								"Authorization": `Basic ${base.encodeBase(rpc.authName + ":" + rpc.authPass)}`,
