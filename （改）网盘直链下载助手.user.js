@@ -5757,7 +5757,7 @@ button.downloadSubtitle:disabled {
 								data.set("save_path", rpc.dir.replace(/[\\/]+$/, "") + "\\" + sub);
 							}
 						}
-						probe.log("bitcomet-body", `body=${data.toString().length} 字符, mirrors=${(data.get("mirror_url_list") || "").split("\n").filter(Boolean).length} 条`);
+						probe.log("bitcomet-body", `body=${data.toString().length} 字符, mirrors=${(data.get("mirror_url_list") || "").split("\n").filter(Boolean).length} 条, ua=${data.get("user_agent") || "无"}, cookie=${data.get("cookie") ? "有" : "无"}`);
 						try {
 							const res = await base.post(url, data, {
 								"Authorization": `Basic ${base.encodeBase(rpc.authName + ":" + rpc.authPass)}`,
