@@ -479,6 +479,34 @@
 	 */
 	const base = {
 		/**
+		 * 节流更新加载弹窗文本
+		 * @author hmjz100
+		 * @description 解析文件夹时会高频刷新进度。直接每次改 DOM 有两重开销：
+		 * $doc.find 全文档扫描 + 每次改动触发页面所有 waitForKeyElements 的 MutationObserver
+		 * 重跑重型选择器（几百个目录就是几百次全量扇出，UI 直接卡死）。
+		 * 这里 300ms 节流、跳过相同文本，并缓存元素引用（丢失时再查一次）。
+		 * @param {String} [title] - 弹窗标题（不传则不更新标题）
+		 * @param {String} [html] - 弹窗内容 HTML（不传则不更新内容）
+		 */
+		updateLoading(title, html) {
+			const cache = (this._loadingCache = this._loadingCache || { at: 0 });
+			const key = `${title || ""}|${html || ""}`;
+			if (cache.key === key) return;
+			const now = Date.now();
+			if (now - cache.at < 300) return;
+			cache.key = key;
+			cache.at = now;
+			if (title !== undefined && title !== null) {
+				cache.$title = (cache.$title && cache.$title.length && cache.$title[0].isConnected) ? cache.$title : $doc.find(".loading-popup .loading-title");
+				cache.$title.html(title);
+			}
+			if (html !== undefined && html !== null) {
+				cache.$html = (cache.$html && cache.$html.length && cache.$html[0].isConnected) ? cache.$html : $doc.find(".loading-popup .swal2-html-container");
+				cache.$html.html(html);
+			}
+		},
+
+		/**
 		 * 注册 GreaseMonkey-Compatible-Manager 扩展菜单命令
 		 * @author 油小猴
 		 * @author hmjz100
@@ -5789,15 +5817,15 @@ button.downloadSubtitle:disabled {
 	 */
 	const $baidu = {
 		async getToken() {
-			$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取授权状态~</div>`);
+			base.updateLoading(`令牌获取中`);
+			base.updateLoading(null, `<div>正在获取授权状态~</div>`);
 			// 获取授权状态
 			const authorize = await base.getFinal(config.$baidu.api.getAccessToken, { Origin: "", Referer: "" }, true);
 			let accessToken;
 			// 判断授权情况
 			if (authorize.includes("authorize")) {
-				$doc.find(".loading-popup .loading-title").html(`授权获取中`);
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取授权页面~</div>`);
+				base.updateLoading(`授权获取中`);
+				base.updateLoading(null, `<div>正在获取授权页面~</div>`);
 				// 没授权，先获取授权的页面
 				const html = await base.get(config.$baidu.api.getAccessToken, {}, "text", false);
 				// 提取页面的发送确认授权的参数
@@ -5811,7 +5839,7 @@ button.downloadSubtitle:disabled {
 					display: "page",
 					grant_permissions: "basic,netdisk"
 				};
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在自动确认授权~</div>`);
+				base.updateLoading(null, `<div>正在自动确认授权~</div>`);
 				// 发送请求达到自动进行授权
 				await base.post(config.$baidu.api.getAccessToken, base.stringify(data), { Origin: "", Referer: "", "Content-Type": "application/x-www-form-urlencoded" });
 				// 再次获取授权状态
@@ -5821,9 +5849,9 @@ button.downloadSubtitle:disabled {
 				accessToken = authorize.match(/access_token=([^&]+)/)?.[1];
 			}
 			// 统一处理令牌结果
-			$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
+			base.updateLoading(`令牌获取中`);
 			if (accessToken) {
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>授权成功，令牌已缓存~</div>`);
+				base.updateLoading(null, `<div>授权成功，令牌已缓存~</div>`);
 				base.setValue("baidu_access_token", accessToken);
 				return accessToken;
 			} else {
@@ -6456,7 +6484,7 @@ button.downloadSubtitle:disabled {
 				});
 
 				proc += res.list.length;
-				$doc.find(".swal2-html-container").html(`已获取 ${proc} / ${items.length} 个地址`);
+				base.updateLoading(null, `已获取 ${proc} / ${items.length} 个地址`);
 
 				// 批次间休息
 				if (i + size < pending.length) await base.sleep(1000);
@@ -6521,7 +6549,7 @@ button.downloadSubtitle:disabled {
 				temp.glinks.push({ "id": item.fs_id, "expires": (Date.now() + 4 * 60 * 60 * 1000), "data": res.list[0] });
 
 				proc++
-				$doc.find(".swal2-html-container").html(`已获取 ${proc} / ${items.length} 个地址`);
+				base.updateLoading(null, `已获取 ${proc} / ${items.length} 个地址`);
 
 				// 批次间休息
 				if (proc < pending.length) await base.sleep(1000);
@@ -6533,7 +6561,7 @@ button.downloadSubtitle:disabled {
 			async function get(targets, prefix) {
 				let files = [];
 				for (const dir of targets) {
-					$doc.find(".loading-popup .loading-title").html(`文件获取中`);
+					base.updateLoading(`文件获取中`);
 					const url = `${config.$baidu.api.getFiles}&dir=${encodeURIComponent(dir.path)}&access_token=${accessToken}`;
 					const res = await base.get(url, { "User-Agent": config.$baidu.api.ua.downloadLink });
 					cnt++;
@@ -6542,7 +6570,7 @@ button.downloadSubtitle:disabled {
 						// 记录文件在所选文件夹内的相对路径，供推送下载器时按目录创建子文件夹
 						subFiles.forEach(f => (f.folderPath = prefix));
 						proc += subFiles.length;
-						$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} 个文件~</div><div>${dir.path}</div>`);
+						base.updateLoading(null, `<div>已获取 ${proc} 个文件~</div><div>${dir.path}</div>`);
 						files = files.concat(subFiles);
 						const subDirs = res.list.filter(f => f.isdir);
 						if (subDirs.length > 0) {
@@ -6551,7 +6579,7 @@ button.downloadSubtitle:disabled {
 						}
 					}
 					if (cnt >= 50) {
-						$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} 个文件~</div><div>休息 3 秒...</div>`);
+						base.updateLoading(null, `<div>已获取 ${proc} 个文件~</div><div>休息 3 秒...</div>`);
 						await base.sleep(3000);
 						cnt = 0;
 					}
@@ -6591,8 +6619,8 @@ button.downloadSubtitle:disabled {
 			const selects = this.getSelectedList();
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
 
-			$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+			base.updateLoading(`地址获取中`);
+			base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 
 			let files = selects.filter(f => !f.isdir);
 			const dirs = selects.filter(f => f.isdir);
@@ -6600,8 +6628,8 @@ button.downloadSubtitle:disabled {
 				if (dirs.length > 0) files = files.concat(await this.getFilesList(dirs, token, files.length));
 				if (!files.length) throw new Error("提示：<br/>文件夹是空的哦~");
 
-				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+				base.updateLoading(`地址获取中`);
+				base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 
 				files = await this.getFilesUrl(files, token).catch(e => {
 					if (e instanceof Error) throw e;
@@ -6971,8 +6999,8 @@ button.downloadSubtitle:disabled {
 			if (selects.length === 0) throw new Error("提示：<br/>请先勾选要下载的文件哦~");
 			if (selects.every(item => item.type !== "file")) throw new Error("提示：<br/>请打开文件夹后再勾选文件~");
 
-			$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+			base.updateLoading(`地址获取中`);
+			base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 
 			if (temp.page === "home") {
 				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
@@ -6981,7 +7009,7 @@ button.downloadSubtitle:disabled {
 					if (!token || !token.token_type || !token.access_token) {
 						return message.error("提示：<br/>请先登录网盘~");
 					}
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					base.updateLoading(null, `<div>正在解析选中的文件夹~</div>`);
 					const expanded = [];
 					for (const item of selects) {
 						if (item.type === "folder") {
@@ -7076,7 +7104,7 @@ button.downloadSubtitle:disabled {
 					});
 
 					proc++;
-					$doc.find(".swal2-html-container").html(`已获取 ${proc} / ${pending.length} 个地址`);
+					base.updateLoading(null, `已获取 ${proc} / ${pending.length} 个地址`);
 				}));
 
 				// 批次间休息
@@ -7428,7 +7456,7 @@ button.downloadSubtitle:disabled {
 				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
 				const folders = selects.filter(item => item.catalogID && item.catalogName);
 				if (folders.length) {
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					base.updateLoading(null, `<div>正在解析选中的文件夹~</div>`);
 					const expanded = [];
 					for (const dir of folders) {
 						expanded.push(...await this.listFolderFiles(dir.catalogID, dir.catalogName).catch(e => {
@@ -7443,8 +7471,8 @@ button.downloadSubtitle:disabled {
 				}
 				const batchSize = 15;
 				let proc = 0;
-				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+				base.updateLoading(`地址获取中`);
+				base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 				for (let i = 0; i < selects.length; i += batchSize) {
 					const batch = selects.slice(i, i + batchSize);
 					const queue = [];
@@ -7453,7 +7481,7 @@ button.downloadSubtitle:disabled {
 						queue.push(this.getFileUrl(item, globalIndex)
 							.then(val => {
 								proc++;
-								$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+								base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 								return val;
 							}));
 					});
@@ -7605,14 +7633,14 @@ button.downloadSubtitle:disabled {
 			});
 		},
 		async getToken() {
-			$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取状态~</div>`);
+			base.updateLoading(`令牌获取中`);
+			base.updateLoading(null, `<div>正在获取状态~</div>`);
 			const res = await base.getFinal(config.$tcloud.api.getAccessToken, undefined, true);
 			const accessToken = res.match(/accessToken=(\w+)/)?.[1];
 			if (accessToken) {
 				base.setStorage("accessToken", accessToken);
-				$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>获取成功，令牌已缓存~</div>`);
+				base.updateLoading(`令牌获取中`);
+				base.updateLoading(null, `<div>获取成功，令牌已缓存~</div>`);
 				return accessToken;
 			}
 			return undefined;
@@ -7689,8 +7717,8 @@ button.downloadSubtitle:disabled {
 			if (selects.some(item => item.isFolder)) {
 				const accessToken = base.getStorage("accessToken");
 				if (!accessToken) throw new Error("提示：<br/>请先登录网盘~");
-				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+				base.updateLoading(`地址获取中`);
+				base.updateLoading(null, `<div>正在解析选中的文件夹~</div>`);
 				const expanded = [];
 				for (const item of selects) {
 					if (item.isFolder) {
@@ -7706,8 +7734,8 @@ button.downloadSubtitle:disabled {
 				selects = expanded;
 			}
 			selects = selects.filter(item => !item.isFolder)
-			$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取状态~</div>`);
+			base.updateLoading(`令牌获取中`);
+			base.updateLoading(null, `<div>正在获取状态~</div>`);
 			const token = base.getStorage("accessToken") || await this.getToken().catch(e => {
 				if (e instanceof Error) throw e;
 				throw new Error(e?.message || e || "[天翼云盘] 获取令牌失败");
@@ -7715,12 +7743,12 @@ button.downloadSubtitle:disabled {
 			if (!token) {
 				throw new Error("提示：<br/>请先登录网盘~");
 			}
-			$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>获取缓存成功~</div>`);
+			base.updateLoading(`令牌获取中`);
+			base.updateLoading(null, `<div>获取缓存成功~</div>`);
 			const batchSize = 15;
 			let proc = 0;
-			$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+			base.updateLoading(`地址获取中`);
+			base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 			for (let i = 0; i < selects.length; i += batchSize) {
 				const batch = selects.slice(i, i + batchSize);
 				const queue = [];
@@ -7729,7 +7757,7 @@ button.downloadSubtitle:disabled {
 					queue.push(this.getFileUrl(item, globalIndex, token)
 						.then(val => {
 							proc++;
-							$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+							base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 							return val;
 						}));
 				});
@@ -7901,8 +7929,8 @@ button.downloadSubtitle:disabled {
 			if (!this.getToken.lock) this.getToken.lock = Promise.resolve();
 			return this.getToken.lock = this.getToken.lock.then(async () => {
 				if (title) {
-					$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>获取状态中~</div>`);
+					base.updateLoading(`令牌获取中`);
+					base.updateLoading(null, `<div>获取状态中~</div>`);
 				}
 
 				let creds = {}, cap = {};
@@ -7946,7 +7974,7 @@ button.downloadSubtitle:disabled {
 				if (isCredsExpired) {
 					if (!creds?.refresh_token) throw new Error(`错误：<br/>登录凭证已过期，且未检测到刷新令牌，请重新登录网盘~`);
 
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>登录凭证过期，正在获取新凭证~</div>`);
+					base.updateLoading(null, `<div>登录凭证过期，正在获取新凭证~</div>`);
 
 					try {
 						const credsRes = await base.post(config.$xunlei.api.getAccessToken, {
@@ -7984,7 +8012,7 @@ button.downloadSubtitle:disabled {
 				const isCapExpired = force || !cap?.token || Date.now() >= (capExpiresAt - 60000);
 
 				if (isCapExpired) {
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>验证令牌过期，正在获取新令牌~</div>`);
+					base.updateLoading(null, `<div>验证令牌过期，正在获取新令牌~</div>`);
 
 					try {
 						const capRes = await base.post(config.$xunlei.api.getCaptchaToken, {
@@ -8095,8 +8123,8 @@ button.downloadSubtitle:disabled {
 			if (temp.page === "home") {
 				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
 				if (selects.some(item => item.kind === "drive#folder")) {
-					$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					base.updateLoading(`地址获取中`);
+					base.updateLoading(null, `<div>正在解析选中的文件夹~</div>`);
 					const expanded = [];
 					for (const item of selects) {
 						if (item.kind === "drive#folder") {
@@ -8113,8 +8141,8 @@ button.downloadSubtitle:disabled {
 				}
 				const batchSize = 15;
 				let proc = 0;
-				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+				base.updateLoading(`地址获取中`);
+				base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 				for (let i = 0; i < selects.length; i += batchSize) {
 					const batch = selects.slice(i, i + batchSize);
 					const queue = [];
@@ -8123,7 +8151,7 @@ button.downloadSubtitle:disabled {
 						queue.push(this.getFileUrl(item, globalIndex)
 							.then(val => {
 								proc++;
-								$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+								base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 								return val;
 							}));
 					});
@@ -8264,8 +8292,8 @@ button.downloadSubtitle:disabled {
 			});
 		},
 		getToken() {
-			$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取状态~</div>`);
+			base.updateLoading(`令牌获取中`);
+			base.updateLoading(null, `<div>正在获取状态~</div>`);
 			let credentials = {}, captcha = {};
 			for (let i = 0; i < localStorage.length; i++) {
 				if (/^credentials_/.test(localStorage.key(i))) {
@@ -8376,7 +8404,7 @@ button.downloadSubtitle:disabled {
 				const token = this.getToken();
 				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
 				if (selects.some(item => item.resType == 2)) {
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					base.updateLoading(null, `<div>正在解析选中的文件夹~</div>`);
 					const expanded = [];
 					for (const item of selects) {
 						if (item.resType == 2) {
@@ -8393,8 +8421,8 @@ button.downloadSubtitle:disabled {
 				}
 				const batchSize = 15;
 				let proc = 0;
-				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+				base.updateLoading(`地址获取中`);
+				base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 				for (let i = 0; i < selects.length; i += batchSize) {
 					const batch = selects.slice(i, i + batchSize);
 					const queue = [];
@@ -8403,7 +8431,7 @@ button.downloadSubtitle:disabled {
 						queue.push(this.getFileUrl(item, globalIndex, token)
 							.then(val => {
 								proc++;
-								$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+								base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 								return val;
 							}));
 					});
@@ -8424,8 +8452,8 @@ button.downloadSubtitle:disabled {
 				});
 				const batchSize = 15;
 				let proc = 0;
-				$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-				$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+				base.updateLoading(`地址获取中`);
+				base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 				for (let i = 0; i < selects.length; i += batchSize) {
 					const batch = selects.slice(i, i + batchSize);
 					const queue = [];
@@ -8434,7 +8462,7 @@ button.downloadSubtitle:disabled {
 						queue.push(this.getFileUrl(item, globalIndex, token, shareToken)
 							.then(val => {
 								proc++;
-								$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+								base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 								return val;
 							}));
 					});
@@ -8723,7 +8751,7 @@ button.downloadSubtitle:disabled {
 				let proc = 0;
 				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
 				if (selects.some(item => item.file === false)) {
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					base.updateLoading(null, `<div>正在解析选中的文件夹~</div>`);
 					const expanded = [];
 					for (const item of selects) {
 						if (item.file === false) {
@@ -8772,8 +8800,8 @@ button.downloadSubtitle:disabled {
 					// 更新处理进度
 					proc += batch.length;
 					// 更新UI显示
-					$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+					base.updateLoading(`地址获取中`);
+					base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 					// 请求间隔节流
 					await base.sleep(1000);
 				}
@@ -8843,8 +8871,8 @@ button.downloadSubtitle:disabled {
 					// 更新处理进度
 					proc += batch.length;
 					// 更新UI显示
-					$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+					base.updateLoading(`地址获取中`);
+					base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 					// 请求间隔节流
 					await base.sleep(1000);
 				}
@@ -9060,7 +9088,7 @@ button.downloadSubtitle:disabled {
 			if (temp.page === "home") {
 				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
 				if (selects.some(item => item.file === false)) {
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					base.updateLoading(null, `<div>正在解析选中的文件夹~</div>`);
 					const expanded = [];
 					for (const item of selects) {
 						if (item.file === false) {
@@ -9108,8 +9136,8 @@ button.downloadSubtitle:disabled {
 					// 更新处理进度
 					proc += batch.length;
 					// 更新UI显示
-					$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+					base.updateLoading(`地址获取中`);
+					base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 					// 请求间隔节流
 					await base.sleep(1000);
 				}
@@ -9176,8 +9204,8 @@ button.downloadSubtitle:disabled {
 					// 更新处理进度
 					proc += batch.length;
 					// 更新UI显示
-					$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+					base.updateLoading(`地址获取中`);
+					base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 					// 请求间隔节流
 					await base.sleep(1000);
 				}
@@ -9405,14 +9433,14 @@ button.downloadSubtitle:disabled {
 			]);
 		},
 		getToken() {
-			$doc.find(".loading-popup .loading-title").html(`令牌获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取令牌~</div>`);
+			base.updateLoading(`令牌获取中`);
+			base.updateLoading(null, `<div>正在获取令牌~</div>`);
 			const token = base.getStorage("authorToken");
 			return token;
 		},
 		getUUID() {
-			$doc.find(".loading-popup .loading-title").html(`用户标识获取中`);
-			$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取用户标识~</div>`);
+			base.updateLoading(`用户标识获取中`);
+			base.updateLoading(null, `<div>正在获取用户标识~</div>`);
 			const uuid = base.getStorage("LoginUuid");
 			return uuid;
 		},
@@ -9460,7 +9488,7 @@ button.downloadSubtitle:disabled {
 				const uuid = this.getUUID();
 				// 展开选中的文件夹：递归列出其中的全部文件，并记录相对路径供推送下载器时创建目录
 				if (selects.some(item => item.Type !== 0)) {
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在解析选中的文件夹~</div>`);
+					base.updateLoading(null, `<div>正在解析选中的文件夹~</div>`);
 					const expanded = [];
 					for (const item of selects) {
 						if (item.Type !== 0) {
@@ -9481,14 +9509,14 @@ button.downloadSubtitle:disabled {
 				for (let i = 0; i < selects.length; i += batchSize) {
 					const batch = selects.slice(i, i + batchSize);
 					const queue = [];
-					$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+					base.updateLoading(`地址获取中`);
+					base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 					batch.forEach((item, localIndex) => {
 						const globalIndex = i + localIndex;
 						queue.push(this.getFileUrl(item, globalIndex, token, uuid, undefined)
 							.then(val => {
 								proc++;
-								$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+								base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 								return val;
 							}));
 					});
@@ -9534,14 +9562,14 @@ button.downloadSubtitle:disabled {
 				for (let i = 0; i < selects.length; i += batchSize) {
 					const batch = selects.slice(i, i + batchSize);
 					const queue = [];
-					$doc.find(".loading-popup .loading-title").html(`地址获取中`);
-					$doc.find(".loading-popup .swal2-html-container").html(`<div>正在获取文件对应的下载地址~</div>`);
+					base.updateLoading(`地址获取中`);
+					base.updateLoading(null, `<div>正在获取文件对应的下载地址~</div>`);
 					batch.forEach((item, localIndex) => {
 						const globalIndex = i + localIndex;
 						queue.push(this.getFileUrl(item, globalIndex, token, uuid, ShareKey)
 							.then(val => {
 								proc++;
-								$doc.find(".loading-popup .swal2-html-container").html(`<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
+								base.updateLoading(null, `<div>已获取 ${proc} / ${selects.length} 个地址~</div>`);
 								return val;
 							}));
 					});
@@ -9735,7 +9763,7 @@ button.downloadSubtitle:disabled {
 	const probe = {
 		key: "LinkSwift_probe_log",
 		beatKey: "LinkSwift_probe_beat",
-		max: 500,
+		max: 200,
 		enabled: true,
 		timer: null,
 		log(event, detail) {
